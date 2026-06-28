@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(({ command, mode }) => {
   return {
-    base: './', // Use relative paths for assets, works with GitHub Pages subdirectories
+    base: '/Job-Fit-Scorer/', // Use repository name for GitHub Pages
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

@@ -28,10 +28,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { JOB_DIRECTORY_DATA } from './jobsData';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 // --- MOCK DATA ---
 const MOCK_RESUME_SKILLS = ["python", "sql", "javascript", "machine learning", "pandas", "statistics", "tableau", "html", "css"];
