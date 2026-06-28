@@ -1,0 +1,6 @@
+{
+  "name": "Job-Fit Scorer Streamlit App",
+  "description": "Python Streamlit application source code for matching students to job roles using NLP & Semantic Similarity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
