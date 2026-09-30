@@ -546,10 +546,10 @@ export default function App() {
             {/* Home Button */}
             <button
               onClick={() => setAppState('upload')}
-              className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center transition-all cursor-pointer ${
                 appState === 'upload' 
                   ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800' 
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
               }`}
             >
               <Home className="w-4 h-4 mr-1.5" />
@@ -563,7 +563,7 @@ export default function App() {
                 className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center transition-all cursor-pointer ${
                   appState === 'results' 
                     ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800' 
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }`}
               >
                 <BarChart className="w-4 h-4 mr-1.5" />
@@ -578,7 +578,7 @@ export default function App() {
                 className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center transition-all border cursor-pointer ${
                   isCareerToolsOpen || !['upload', 'loading', 'results'].includes(appState)
                     ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                    : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:border-neutral-300'
+                    : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60'
                 }`}
               >
                 <Layers className="w-4 h-4 mr-1.5" />
@@ -705,7 +705,7 @@ export default function App() {
                       <div className="space-y-0.5">
                         <button
                           onClick={() => { handleOpenBuildCV(targetRole, extractedSkills); setIsCareerToolsOpen(false); }}
-                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors"
+                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors cursor-pointer"
                         >
                           <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400">
                             <FileText className="w-4 h-4" />
@@ -718,7 +718,7 @@ export default function App() {
 
                         <button
                           onClick={() => { setAppState('cover-letter'); setIsCareerToolsOpen(false); }}
-                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors"
+                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors cursor-pointer"
                         >
                           <div className="p-2 rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400">
                             <Send className="w-4 h-4" />
@@ -731,7 +731,7 @@ export default function App() {
 
                         <button
                           onClick={() => { setAppState('application-tracker'); setIsCareerToolsOpen(false); }}
-                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors"
+                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors cursor-pointer"
                         >
                           <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
                             <ClipboardList className="w-4 h-4" />
@@ -744,7 +744,7 @@ export default function App() {
 
                         <button
                           onClick={() => { setAppState('bulk-ranker'); setIsCareerToolsOpen(false); }}
-                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors"
+                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors cursor-pointer"
                         >
                           <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400">
                             <Users className="w-4 h-4" />
@@ -764,7 +764,7 @@ export default function App() {
             {/* Profile Vault Button */}
             <button
               onClick={() => setIsAccountModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 flex items-center transition-all ml-1 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 flex items-center transition-all ml-1 cursor-pointer"
               title="Career Vault & Saved Resumes"
             >
               <User className="w-3.5 h-3.5 mr-1.5 text-blue-600 dark:text-blue-400" />
@@ -775,7 +775,7 @@ export default function App() {
             {/* Dark Mode Toggle */}
             <button 
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ml-1 cursor-pointer"
+              className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white transition-colors ml-1 cursor-pointer"
               aria-label="Toggle theme"
               title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
@@ -820,7 +820,7 @@ export default function App() {
                     className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center transition-all cursor-pointer ${
                       inputType === 'file' 
                         ? 'bg-white dark:bg-neutral-900 text-neutral-950 dark:text-white shadow-xs' 
-                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
                     }`}
                   >
                     <UploadCloud className="w-4 h-4 mr-2" />
@@ -831,7 +831,7 @@ export default function App() {
                     className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center transition-all cursor-pointer ${
                       inputType === 'text' 
                         ? 'bg-white dark:bg-neutral-900 text-neutral-950 dark:text-white shadow-xs' 
-                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
                     }`}
                   >
                     <Type className="w-4 h-4 mr-2" />
@@ -844,7 +844,7 @@ export default function App() {
                   <div className="space-y-4">
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-blue-500 dark:hover:border-blue-400 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-3 group"
+                      className="border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-blue-500 dark:hover:border-blue-400 bg-neutral-50/50 dark:bg-neutral-900/50 hover:bg-blue-50/20 dark:hover:bg-neutral-800/40 rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-3 group"
                     >
                       <input 
                         ref={fileInputRef} 
@@ -875,7 +875,7 @@ export default function App() {
                           </div>
                           <button
                             onClick={handleCancelUpload}
-                            className="text-xs text-neutral-500 hover:text-rose-600 flex items-center cursor-pointer"
+                            className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2 py-1 rounded-lg transition-colors flex items-center cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5 mr-1" /> Remove
                           </button>
@@ -980,11 +980,11 @@ export default function App() {
                                 <div className="flex items-center space-x-1.5 pt-1">
                                   {(['Beginner', 'Intermediate', 'Advanced'] as const).map(lvl => {
                                     const isChosen = currentLvl === lvl;
-                                    let chipStyle = "bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400";
+                                    let chipStyle = "bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800";
                                     if (isChosen) {
-                                      if (lvl === 'Beginner') chipStyle = "bg-amber-50 dark:bg-amber-950/60 border-amber-300 text-amber-700 dark:text-amber-300 font-bold shadow-2xs";
-                                      if (lvl === 'Intermediate') chipStyle = "bg-blue-50 dark:bg-blue-950/60 border-blue-300 text-blue-700 dark:text-blue-300 font-bold shadow-2xs";
-                                      if (lvl === 'Advanced') chipStyle = "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 text-emerald-700 dark:text-emerald-300 font-bold shadow-2xs";
+                                      if (lvl === 'Beginner') chipStyle = "bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 font-bold shadow-2xs hover:bg-amber-100/80 dark:hover:bg-amber-900/60";
+                                      if (lvl === 'Intermediate') chipStyle = "bg-blue-50 dark:bg-blue-950/60 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold shadow-2xs hover:bg-blue-100/80 dark:hover:bg-blue-900/60";
+                                      if (lvl === 'Advanced') chipStyle = "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-bold shadow-2xs hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60";
                                     }
                                     return (
                                       <button
@@ -1021,7 +1021,7 @@ export default function App() {
                             <button
                               key={s}
                               onClick={() => handleAddSkill(s)}
-                              className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:border-blue-400 transition-all cursor-pointer"
+                              className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all cursor-pointer"
                             >
                               + {s}
                             </button>
@@ -1177,7 +1177,7 @@ export default function App() {
                             setAppState(card.id as ActiveToolTab);
                           }
                         }}
-                        className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-blue-400 dark:hover:border-blue-500 shadow-2xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                        className="p-6 rounded-3xl bg-white dark:bg-neutral-900 hover:bg-neutral-50/70 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 hover:border-blue-400 dark:hover:border-blue-500 shadow-2xs hover:shadow-lg dark:hover:shadow-black/50 transition-all cursor-pointer group flex flex-col justify-between"
                       >
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
@@ -1264,7 +1264,7 @@ export default function App() {
                         className={`px-3 py-1 rounded-lg font-bold capitalize transition-all cursor-pointer ${
                           resultsSortBy === s
                             ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
-                            : 'text-neutral-500 hover:text-neutral-800'
+                            : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/60'
                         }`}
                       >
                         {s === 'semantic' ? 'Smart Fit' : s === 'base' ? 'Exact Match' : 'Least Gaps'}
