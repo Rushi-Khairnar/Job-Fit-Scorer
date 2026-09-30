@@ -16,13 +16,29 @@ import {
   Linkedin, 
   CheckCircle2,
   Eye,
-  Edit3
+  Edit3,
+  Loader2,
+  FileDown,
+  ArrowLeft
 } from 'lucide-react';
+import { 
+  Document, 
+  Packer, 
+  Paragraph, 
+  TextRun, 
+  AlignmentType, 
+  BorderStyle,
+  convertInchesToTwip 
+} from 'docx';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface ResumeBuilderProps {
   initialSkills?: string[];
   initialRole?: string;
   onBackToHome?: () => void;
+  onBack?: () => void;
+  backButtonLabel?: string;
 }
 
 interface ExperienceItem {
@@ -44,7 +60,9 @@ interface EducationItem {
 export const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
   initialSkills = [],
   initialRole = 'Data Scientist',
-  onBackToHome
+  onBackToHome,
+  onBack,
+  backButtonLabel
 }) => {
   // Personal Info
   const [fullName, setFullName] = useState('Alex Johnson');
@@ -98,6 +116,24 @@ export const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
   ]);
 
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
+  const [isGeneratingWord, setIsGeneratingWord] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4500);
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (onBackToHome) {
+      onBackToHome();
+    }
+  };
 
   const handleAddSkill = () => {
     const trimmed = newSkillInput.trim();
@@ -149,8 +185,346 @@ export const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     setEducations(prev => prev.map(e => e.id === id ? { ...e, [field]: value } : e));
   };
 
-  const handlePrint = () => {
+  const handlePrint = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     window.print();
+  };
+
+  const handleDownloadWord = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      setIsGeneratingWord(true);
+
+      const createSectionHeading = (title: string) => {
+        return new Paragraph({
+          spacing: { before: 240, after: 120 },
+          border: {
+            bottom: {
+              color: "CBD5E1",
+              space: 4,
+              style: BorderStyle.SINGLE,
+              size: 6,
+            },
+          },
+          children: [
+            new TextRun({
+              text: title.toUpperCase(),
+              bold: true,
+              size: 20,
+              color: "0F172A",
+              font: "Calibri",
+            }),
+          ],
+        });
+      };
+
+      const doc = new Document({
+        sections: [
+          {
+            properties: {
+              page: {
+                margin: {
+                  top: convertInchesToTwip(0.6),
+                  right: convertInchesToTwip(0.6),
+                  bottom: convertInchesToTwip(0.6),
+                  left: convertInchesToTwip(0.6),
+                },
+              },
+            },
+            children: [
+              // Header - Full Name
+              new Paragraph({
+                alignment: AlignmentType.LEFT,
+                spacing: { after: 40 },
+                children: [
+                  new TextRun({
+                    text: fullName.toUpperCase(),
+                    bold: true,
+                    size: 32,
+                    color: "020617",
+                    font: "Calibri",
+                  }),
+                ],
+              }),
+              // Target Role
+              new Paragraph({
+                alignment: AlignmentType.LEFT,
+                spacing: { after: 80 },
+                children: [
+                  new TextRun({
+                    text: jobTitle,
+                    bold: true,
+                    size: 24,
+                    color: "1D4ED8",
+                    font: "Calibri",
+                  }),
+                ],
+              }),
+              // Contact details
+              new Paragraph({
+                alignment: AlignmentType.LEFT,
+                spacing: { after: 200 },
+                border: {
+                  bottom: {
+                    color: "0F172A",
+                    space: 6,
+                    style: BorderStyle.SINGLE,
+                    size: 12,
+                  },
+                },
+                children: [
+                  new TextRun({
+                    text: [
+                      email ? `✉ ${email}` : '',
+                      phone ? `☎ ${phone}` : '',
+                      location ? `⚲ ${location}` : '',
+                      portfolio ? `🌐 ${portfolio}` : '',
+                      linkedin ? `💼 ${linkedin}` : ''
+                    ].filter(Boolean).join("   |   "),
+                    size: 18,
+                    color: "475569",
+                    font: "Calibri",
+                  }),
+                ],
+              }),
+
+              // Summary
+              ...(summary ? [
+                createSectionHeading("Professional Summary"),
+                new Paragraph({
+                  spacing: { after: 180 },
+                  children: [
+                    new TextRun({
+                      text: summary,
+                      size: 20,
+                      font: "Calibri",
+                      color: "334155",
+                    }),
+                  ],
+                }),
+              ] : []),
+
+              // Skills
+              ...(skills.length > 0 ? [
+                createSectionHeading("Technical Skills & Core Competencies"),
+                new Paragraph({
+                  spacing: { after: 180 },
+                  children: [
+                    new TextRun({
+                      text: skills.join("   •   "),
+                      size: 20,
+                      font: "Calibri",
+                      color: "1E293B",
+                    }),
+                  ],
+                }),
+              ] : []),
+
+              // Experience
+              ...(experiences.length > 0 ? [
+                createSectionHeading("Professional Experience & Projects"),
+                ...experiences.flatMap(exp => [
+                  new Paragraph({
+                    spacing: { before: 140, after: 30 },
+                    children: [
+                      new TextRun({
+                        text: exp.role,
+                        bold: true,
+                        size: 22,
+                        color: "0F172A",
+                        font: "Calibri",
+                      }),
+                      new TextRun({
+                        text: `   (${exp.duration})`,
+                        color: "64748B",
+                        size: 18,
+                        font: "Calibri",
+                      }),
+                    ],
+                  }),
+                  new Paragraph({
+                    spacing: { after: 60 },
+                    children: [
+                      new TextRun({
+                        text: exp.company,
+                        italics: true,
+                        size: 20,
+                        color: "334155",
+                        font: "Calibri",
+                      }),
+                    ],
+                  }),
+                  ...exp.bullets
+                    .split('\n')
+                    .map(b => b.replace(/^[•\-\*]\s*/, '').trim())
+                    .filter(Boolean)
+                    .map(bulletText => 
+                      new Paragraph({
+                        bullet: { level: 0 },
+                        spacing: { after: 50 },
+                        children: [
+                          new TextRun({
+                            text: bulletText,
+                            size: 19,
+                            color: "334155",
+                            font: "Calibri",
+                          }),
+                        ],
+                      })
+                    ),
+                ]),
+              ] : []),
+
+              // Education
+              ...(educations.length > 0 ? [
+                createSectionHeading("Education & Credentials"),
+                ...educations.flatMap(edu => [
+                  new Paragraph({
+                    spacing: { before: 140, after: 30 },
+                    children: [
+                      new TextRun({
+                        text: edu.degree,
+                        bold: true,
+                        size: 22,
+                        color: "0F172A",
+                        font: "Calibri",
+                      }),
+                      new TextRun({
+                        text: `   (${edu.year})`,
+                        color: "64748B",
+                        size: 18,
+                        font: "Calibri",
+                      }),
+                    ],
+                  }),
+                  new Paragraph({
+                    spacing: { after: 30 },
+                    children: [
+                      new TextRun({
+                        text: edu.institution,
+                        italics: true,
+                        size: 20,
+                        color: "334155",
+                        font: "Calibri",
+                      }),
+                    ],
+                  }),
+                  ...(edu.details ? [
+                    new Paragraph({
+                      spacing: { after: 90 },
+                      children: [
+                        new TextRun({
+                          text: edu.details,
+                          size: 18,
+                          color: "64748B",
+                          font: "Calibri",
+                        }),
+                      ],
+                    })
+                  ] : []),
+                ]),
+              ] : []),
+            ],
+          },
+        ],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = `${fullName.trim().replace(/\s+/g, '_') || 'My'}_Resume.docx`;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast(`Downloaded ${fileName} (Word document) successfully!`);
+    } catch (err) {
+      console.error("Failed to generate Word document:", err);
+      showToast("Error generating Word file. Please try again.");
+    } finally {
+      setIsGeneratingWord(false);
+    }
+  };
+
+  const handleDownloadPdf = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const sheetElement = document.getElementById('resume-print-sheet');
+    if (!sheetElement) {
+      handlePrint();
+      return;
+    }
+
+    try {
+      setIsGeneratingPdf(true);
+
+      // Clone element off-screen at fixed 800px width for consistent high-res rendering
+      const clone = sheetElement.cloneNode(true) as HTMLElement;
+      clone.style.position = 'fixed';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = '800px';
+      clone.style.minHeight = '1100px';
+      clone.style.display = 'block';
+      clone.style.zIndex = '-9999';
+      clone.style.backgroundColor = '#ffffff';
+      clone.style.color = '#0f172a';
+      document.body.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      document.body.removeChild(clone);
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+        heightLeft -= pageHeight;
+      }
+
+      const fileName = `${fullName.trim().replace(/\s+/g, '_') || 'My'}_Resume.pdf`;
+      pdf.save(fileName);
+      showToast(`Downloaded ${fileName} (PDF document) successfully!`);
+    } catch (err) {
+      console.error("PDF generation error, falling back to print dialog:", err);
+      handlePrint();
+      showToast("Opened print dialog to save as PDF.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleDownloadMarkdown = () => {
@@ -178,67 +552,128 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`Downloaded ${fullName.replace(/\s+/g, '_')}_Resume.md text file!`);
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 py-4">
+    <div className="max-w-7xl mx-auto space-y-8 py-4 relative">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 text-xs font-semibold animate-bounce duration-700">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Banner with Action Toolbar */}
       <div className="bg-white dark:bg-neutral-800 rounded-3xl p-6 md:p-8 border border-neutral-200 dark:border-neutral-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
         <div>
+          {(onBack || onBackToHome) && (
+            <button
+              type="button"
+              onClick={() => (onBack ? onBack() : onBackToHome?.())}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-100 text-xs font-bold transition-all cursor-pointer border border-neutral-200 dark:border-neutral-600 mb-3 group"
+              title="Return to previous screen"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>{backButtonLabel || '← Back to Job Matches'}</span>
+            </button>
+          )}
+
           <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold mb-2 border border-emerald-200 dark:border-emerald-800">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>ATS-Ready Resume Generator</span>
+            <span>Job-Ready Resume <span className="opacity-70 font-normal">[Word & PDF Downloads]</span></span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Interactive CV Builder</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Resume Builder</h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1">
-            Build, tailor to target role skills, preview in real time, and export directly to PDF.
+            Build a clean, modern resume formatted for hiring systems. Download directly as Microsoft Word (.docx) or PDF (.pdf).
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700">
             <button
               onClick={() => setActiveTab('editor')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all ${
                 activeTab === 'editor' 
                   ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs' 
                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
               }`}
             >
-              <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Form Editor
+              <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Edit Form
             </button>
             <button
               onClick={() => setActiveTab('preview')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all ${
                 activeTab === 'preview' 
                   ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs' 
                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
               }`}
             >
-              <Eye className="w-3.5 h-3.5 mr-1.5" /> Live Preview
+              <Eye className="w-3.5 h-3.5 mr-1.5" /> See Preview
             </button>
           </div>
 
+          {/* Download as Word (.docx) */}
           <button
-            onClick={handleDownloadMarkdown}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors flex items-center"
+            type="button"
+            onClick={(e) => handleDownloadWord(e)}
+            disabled={isGeneratingWord}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white shadow-sm shadow-blue-700/20 transition-all flex items-center cursor-pointer"
+            title="Download formatted Microsoft Word document (.docx)"
           >
-            <Download className="w-3.5 h-3.5 mr-1.5" /> Export MD
+            {isGeneratingWord ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <span>Making Word...</span>
+              </>
+            ) : (
+              <>
+                <FileDown className="w-3.5 h-3.5 mr-1.5" />
+                <span>Word (.docx)</span>
+              </>
+            )}
           </button>
 
+          {/* Download as PDF (.pdf) */}
           <button
-            onClick={handlePrint}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 transition-colors flex items-center"
+            type="button"
+            onClick={(e) => handleDownloadPdf(e)}
+            disabled={isGeneratingPdf}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white shadow-sm shadow-emerald-600/20 transition-all flex items-center cursor-pointer"
+            title="Download print-ready PDF file (.pdf)"
           >
-            <Printer className="w-3.5 h-3.5 mr-1.5" /> Print / Save PDF
+            {isGeneratingPdf ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <span>Making PDF...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                <span>PDF (.pdf)</span>
+              </>
+            )}
           </button>
 
-          {onBackToHome && (
+          {/* Print dialog */}
+          <button
+            type="button"
+            onClick={(e) => handlePrint(e)}
+            className="p-2 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors flex items-center cursor-pointer"
+            title="Open browser print dialog"
+          >
+            <Printer className="w-4 h-4" />
+          </button>
+
+          {(onBack || onBackToHome) && (
             <button
-              onClick={onBackToHome}
-              className="text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 ml-2"
+              type="button"
+              onClick={handleBack}
+              className="text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:text-blue-600 dark:hover:text-blue-400 ml-1 px-3 py-1.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 transition-colors flex items-center cursor-pointer"
             >
-              ✕ Exit
+              <span>{backButtonLabel || '← Back to Job Matches'}</span>
             </button>
           )}
         </div>
@@ -586,6 +1021,42 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Quick Action Footer for Preview */}
+            <div className="mt-4 p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm print:hidden">
+              <div className="flex items-center space-x-2 text-xs text-neutral-600 dark:text-neutral-300">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="font-medium">Ready to apply? Choose your format:</span>
+              </div>
+              <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={(e) => handleDownloadWord(e)}
+                  disabled={isGeneratingWord}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white flex items-center shadow-xs transition-colors cursor-pointer"
+                >
+                  {isGeneratingWord ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <FileDown className="w-3.5 h-3.5 mr-1" />
+                  )}
+                  <span>Word (.docx)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleDownloadPdf(e)}
+                  disabled={isGeneratingPdf}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white flex items-center shadow-xs transition-colors cursor-pointer"
+                >
+                  {isGeneratingPdf ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5 mr-1" />
+                  )}
+                  <span>PDF (.pdf)</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

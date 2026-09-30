@@ -19,12 +19,18 @@ interface RoadmapSectionProps {
   initialRole?: string;
   onTakeQuiz?: (role: string) => void;
   onBuildCV?: (role: string, skills: string[]) => void;
+  onBackToHome?: () => void;
+  completedMilestones?: string[];
+  onToggleMilestone?: (milestoneKey: string) => void;
 }
 
 export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
   initialRole,
   onTakeQuiz,
-  onBuildCV
+  onBuildCV,
+  onBackToHome,
+  completedMilestones,
+  onToggleMilestone
 }) => {
   const [selectedRoleTitle, setSelectedRoleTitle] = useState<string>(() => {
     if (initialRole) {
@@ -43,7 +49,17 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
 
   const currentRole = JOB_DIRECTORY_DATA.find(r => r.title === selectedRoleTitle) || JOB_DIRECTORY_DATA[0];
 
+  const isStepCompleted = (stepKey: string) => {
+    if (completedMilestones) {
+      return completedMilestones.includes(stepKey);
+    }
+    return !!completedSteps[stepKey];
+  };
+
   const toggleStep = (stepKey: string) => {
+    if (onToggleMilestone) {
+      onToggleMilestone(stepKey);
+    }
     setCompletedSteps(prev => ({ ...prev, [stepKey]: !prev[stepKey] }));
   };
 
@@ -122,11 +138,11 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
         <div>
           <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold mb-2 border border-blue-200 dark:border-blue-800">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Structured Career Progression</span>
+            <span>Step-by-Step Learning <span className="opacity-70 font-normal">[Role Roadmaps]</span></span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Role-Specific Learning Roadmaps</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Learning Roadmaps</h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1">
-            Step-by-step 16-week path with milestones, skills required, and curated tutorial links.
+            Easy step-by-step guides showing exactly what to study, week-by-week, to land your dream job.
           </p>
         </div>
 
@@ -135,7 +151,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
           <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-3.5" />
           <input
             type="text"
-            placeholder="Search career role..."
+            placeholder="Search any job role..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-neutral-800 dark:text-neutral-200"
@@ -158,7 +174,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
                 className={`w-full text-left p-3.5 rounded-2xl transition-all border ${
                   isSelected 
                     ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100 shadow-xs' 
-                    : 'border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300'
+                    : 'border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -262,7 +278,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
                 <div className="space-y-5">
                   {stage.milestones.map((m, mIdx) => {
                     const stepKey = `${currentRole.title}-${sIdx}-${mIdx}`;
-                    const isDone = Boolean(completedSteps[stepKey]);
+                    const isDone = isStepCompleted(stepKey);
 
                     return (
                       <div 
@@ -270,7 +286,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
                         className={`p-4 rounded-2xl border transition-all ${
                           isDone 
                             ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60' 
-                            : 'bg-neutral-50/50 dark:bg-neutral-850/50 border-neutral-200/80 dark:border-neutral-700/60'
+                            : 'bg-neutral-50/50 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-4">

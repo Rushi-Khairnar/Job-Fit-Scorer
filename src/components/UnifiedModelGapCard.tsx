@@ -48,7 +48,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
     <div className="border border-neutral-200 dark:border-neutral-700/80 rounded-2xl bg-white dark:bg-neutral-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
       {/* Header Summary Row */}
       <div 
-        className="p-6 cursor-pointer select-none hover:bg-neutral-50/60 dark:hover:bg-neutral-750/30 transition-colors"
+        className="p-6 cursor-pointer select-none hover:bg-neutral-50/70 dark:hover:bg-neutral-700/30 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
@@ -78,23 +78,23 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
 
           {/* Unified Model Comparison Metric Cluster */}
           <div className="flex items-center space-x-3 sm:space-x-5 flex-wrap">
-            {/* TF-IDF Baseline */}
+            {/* Direct Keywords Baseline */}
             <div className="bg-neutral-100/80 dark:bg-neutral-900/60 px-3.5 py-2 rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 text-center min-w-[90px]">
-              <span className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Base TF-IDF</span>
+              <span className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Exact Match [TF-IDF]</span>
               <span className="text-base font-bold text-neutral-800 dark:text-neutral-200">{job.tfidfScore}%</span>
             </div>
 
             {/* Semantic Model Score */}
             <div className="bg-blue-50/90 dark:bg-blue-950/40 px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800/70 text-center min-w-[105px]">
               <span className="block text-[11px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center justify-center">
-                <Sparkles className="w-3 h-3 mr-1" /> Semantic
+                <Sparkles className="w-3 h-3 mr-1" /> Smart Fit [Meaning]
               </span>
               <span className="text-base font-extrabold text-blue-700 dark:text-blue-300">{job.semanticScore}%</span>
             </div>
 
             {/* Semantic Uplift */}
             <div className="hidden sm:flex flex-col items-center justify-center min-w-[75px]">
-              <span className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 uppercase">Uplift</span>
+              <span className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 uppercase">Bonus Fit</span>
               <span className={`text-sm font-semibold flex items-center ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-500'}`}>
                 <TrendingUp className="w-3.5 h-3.5 mr-1" />
                 {isPositive ? `+${uplift}%` : `${uplift}%`}
@@ -111,7 +111,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
         {/* Quick Skills Preview Bar */}
         <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/50 flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wide mr-2 flex items-center">
-            <Layers className="w-3.5 h-3.5 mr-1" /> Snapshot:
+            <Layers className="w-3.5 h-3.5 mr-1" /> Quick Peek:
           </span>
           {job.matchingSkills.slice(0, 3).map(skill => (
             <span key={skill} className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40 capitalize">
@@ -139,7 +139,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="border-t border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-850/50"
+            className="border-t border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-900/60"
           >
             <div className="p-6 md:p-8 space-y-8">
               {/* Side-by-Side Skill Breakdown with Needed Levels */}
@@ -149,9 +149,9 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                   <div className="flex items-center justify-between mb-4">
                     <h5 className="font-bold text-neutral-900 dark:text-white flex items-center text-sm">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 mr-2" />
-                      Matching Profile Skills ({job.matchingSkills.length})
+                      Skills You Already Have ({job.matchingSkills.length})
                     </h5>
-                    <span className="text-xs text-neutral-400 dark:text-neutral-500">Acquired</span>
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Matched</span>
                   </div>
                   {job.matchingSkills.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
@@ -172,7 +172,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">No matching skills detected for this role.</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">No matching skills detected yet for this role.</p>
                   )}
                 </div>
 
@@ -181,9 +181,9 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                   <div className="flex items-center justify-between mb-4">
                     <h5 className="font-bold text-neutral-900 dark:text-white flex items-center text-sm">
                       <AlertCircle className="w-4 h-4 text-rose-500 mr-2" />
-                      Skill Gaps & Required Level ({job.missingSkills.length})
+                      Skills to Learn Next ({job.missingSkills.length})
                     </h5>
-                    <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">Needed</span>
+                    <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">To Learn</span>
                   </div>
                   {job.missingSkills.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
@@ -205,7 +205,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                     </div>
                   ) : (
                     <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-center">
-                      <CheckCircle2 className="w-4 h-4 mr-1.5" /> Congratulations! You meet all listed technical requirements for this role.
+                      <CheckCircle2 className="w-4 h-4 mr-1.5" /> Congratulations! You meet all listed requirements for this role.
                     </p>
                   )}
                 </div>
@@ -215,7 +215,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
               <div className="bg-white dark:bg-neutral-800 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-xs">
                 <h5 className="font-bold text-neutral-900 dark:text-white text-sm mb-4 flex items-center">
                   <Sparkles className="w-4 h-4 text-blue-500 mr-2" />
-                  Candidate Proficiency vs Ideal Role Benchmark
+                  Your Skills vs What Employers Look For
                 </h5>
                 <div className="h-64 w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -223,8 +223,8 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                       <PolarGrid stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
                       <PolarAngleAxis dataKey="subject" tick={{ fill: isDarkMode ? '#9ca3af' : '#4b5563', fontSize: 12 }} />
                       <PolarRadiusAxis angle={30} domain={[0, 100]} stroke={isDarkMode ? "#4b5563" : "#d1d5db"} />
-                      <Radar name="Student Proficiency" dataKey="student" stroke="#2563eb" fill="#3b82f6" fillOpacity={0.4} />
-                      <Radar name="Target Benchmark" dataKey="ideal" stroke="#10b981" fill="#10b981" fillOpacity={0.15} />
+                      <Radar name="Your Skills" dataKey="student" stroke="#2563eb" fill="#3b82f6" fillOpacity={0.4} />
+                      <Radar name="Employer Benchmark" dataKey="ideal" stroke="#10b981" fill="#10b981" fillOpacity={0.15} />
                       <Tooltip 
                         contentStyle={{ 
                           backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', 
@@ -242,7 +242,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
               {/* Action Toolbar for the Role */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Ready to bridge these gaps or target this role?
+                  Ready to learn these skills or prepare for this role?
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {onSelectRoadmap && (
@@ -260,7 +260,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                       className="px-3.5 py-2 bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-semibold rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors flex items-center border border-purple-200 dark:border-purple-800"
                     >
                       <HelpCircle className="w-3.5 h-3.5 mr-1.5" />
-                      Practice MCQ Quiz
+                      Practice Skill Quiz
                     </button>
                   )}
                   {onBuildCV && (
@@ -269,7 +269,7 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                       className="px-3.5 py-2 bg-emerald-600 dark:bg-emerald-500 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors flex items-center shadow-sm"
                     >
                       <FileText className="w-3.5 h-3.5 mr-1.5" />
-                      Build CV for this Role
+                      Build Resume for this Role
                     </button>
                   )}
                 </div>

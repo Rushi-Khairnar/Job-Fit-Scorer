@@ -10,16 +10,32 @@ import {
   Database, 
   Cloud, 
   Sparkles,
-  HelpCircle
+  HelpCircle,
+  Compass,
+  Check,
+  TrendingUp,
+  Cpu,
+  Server,
+  ShieldCheck,
+  Boxes,
+  Code2,
+  PieChart
 } from 'lucide-react';
 import { QUIZ_COLLECTION, SkillQuiz } from '../quizData';
 
 interface QuizSectionProps {
   initialQuizId?: string;
   onBackToHome?: () => void;
+  onSelectRoadmap?: (role: string) => void;
+  onRecordQuizScore?: (quizId: string, title: string, score: number, total: number) => void;
 }
 
-export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackToHome }) => {
+export const QuizSection: React.FC<QuizSectionProps> = ({ 
+  initialQuizId, 
+  onBackToHome,
+  onSelectRoadmap,
+  onRecordQuizScore
+}) => {
   const [selectedQuiz, setSelectedQuiz] = useState<SkillQuiz>(() => {
     if (initialQuizId) {
       const found = QUIZ_COLLECTION.find(q => q.id === initialQuizId || q.title.toLowerCase().includes(initialQuizId.toLowerCase()));
@@ -50,6 +66,12 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
       setIsAnswerSubmitted(false);
     } else {
       setIsQuizCompleted(true);
+      const finalScore = [...userAnswers].reduce((total, ans, idx) => {
+        return ans === selectedQuiz.questions[idx].correctIndex ? total + 1 : total;
+      }, 0);
+      if (onRecordQuizScore) {
+        onRecordQuizScore(selectedQuiz.id, selectedQuiz.title, finalScore, selectedQuiz.questions.length);
+      }
     }
   };
 
@@ -68,11 +90,17 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
-      case 'BrainCircuit': return <BrainCircuit className="w-5 h-5" />;
-      case 'Database': return <Database className="w-5 h-5" />;
-      case 'Code': return <Code className="w-5 h-5" />;
-      case 'Cloud': return <Cloud className="w-5 h-5" />;
-      default: return <HelpCircle className="w-5 h-5" />;
+      case 'BrainCircuit': return <BrainCircuit className="w-4 h-4" />;
+      case 'Database': return <Database className="w-4 h-4" />;
+      case 'Layout': return <Code className="w-4 h-4" />;
+      case 'Cloud': return <Cloud className="w-4 h-4" />;
+      case 'Cpu': return <Cpu className="w-4 h-4" />;
+      case 'Server': return <Server className="w-4 h-4" />;
+      case 'ShieldCheck': return <ShieldCheck className="w-4 h-4" />;
+      case 'Boxes': return <Boxes className="w-4 h-4" />;
+      case 'Code2': return <Code2 className="w-4 h-4" />;
+      case 'PieChart': return <PieChart className="w-4 h-4" />;
+      default: return <HelpCircle className="w-4 h-4" />;
     }
   };
 
@@ -84,11 +112,11 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
           <div>
             <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded-full text-xs font-semibold mb-2 border border-purple-200 dark:border-purple-800">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Skill Practice & Verification</span>
+              <span>Skill Practice <span className="opacity-70 font-normal">[10 Questions Each · 10 Topics]</span></span>
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Technical MCQ Skill Quizzes</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Skill Practice Quizzes</h2>
             <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1">
-              5 focused questions with instant feedback and deep architectural explanations.
+              Test your technical readiness across 10 in-depth subjects. Earn scores out of 10 and unlock guided career roadmaps.
             </p>
           </div>
 
@@ -97,35 +125,35 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
               onClick={onBackToHome}
               className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              ← Back to Scorer
+              ← Back to Matcher
             </button>
           )}
         </div>
 
-        {/* Quiz Track Pills */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Quiz Track Pills Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
           {QUIZ_COLLECTION.map(quiz => {
             const isSelected = quiz.id === selectedQuiz.id;
             return (
               <button
                 key={quiz.id}
                 onClick={() => handleRestart(quiz)}
-                className={`p-3.5 rounded-2xl border text-left transition-all ${
+                className={`p-3 rounded-2xl border text-left transition-all ${
                   isSelected 
-                    ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 shadow-xs ring-2 ring-blue-500/20' 
-                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-850/50'
+                    ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/50 shadow-xs ring-2 ring-blue-500/20' 
+                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-800/60'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`p-2 rounded-xl ${isSelected ? 'bg-blue-600 text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-blue-600 text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}>
                     {getIcon(quiz.iconName)}
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300">
-                    {quiz.level}
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400">
+                    10 Qs
                   </span>
                 </div>
                 <h4 className="text-xs font-bold text-neutral-900 dark:text-white truncate">{quiz.title}</h4>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">{quiz.roleTag}</p>
+                <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">{quiz.roadmapRole}</p>
               </button>
             );
           })}
@@ -145,18 +173,18 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
                 {selectedQuiz.title}
               </h3>
             </div>
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1 sm:space-x-1.5">
               {selectedQuiz.questions.map((_, i) => (
                 <div
                   key={i}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  className={`h-2 rounded-full transition-all ${
                     i === currentQuestionIndex 
-                      ? 'bg-blue-600 w-6' 
+                      ? 'bg-blue-600 w-5' 
                       : i < userAnswers.length
                         ? userAnswers[i] === selectedQuiz.questions[i].correctIndex
-                          ? 'bg-emerald-500'
-                          : 'bg-rose-500'
-                        : 'bg-neutral-200 dark:bg-neutral-700'
+                          ? 'bg-emerald-500 w-2'
+                          : 'bg-rose-500 w-2'
+                        : 'bg-neutral-200 dark:bg-neutral-700 w-2'
                   }`}
                 />
               ))}
@@ -166,7 +194,7 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
           {/* Question Prompt */}
           <div className="py-2">
             <span className="inline-block px-2.5 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-md text-xs font-medium mb-3">
-              Skill: {currentQuestion.skillTag}
+              Skill Focus: {currentQuestion.skillTag}
             </span>
             <p className="text-lg md:text-xl font-semibold text-neutral-900 dark:text-white leading-relaxed">
               {currentQuestion.question}
@@ -178,7 +206,7 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
             {currentQuestion.options.map((option, idx) => {
               const isChosen = selectedOption === idx;
               const isCorrect = idx === currentQuestion.correctIndex;
-              let btnStyle = "border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-600 bg-neutral-50/50 dark:bg-neutral-850/50 text-neutral-800 dark:text-neutral-200";
+              let btnStyle = "border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-600 bg-neutral-50/50 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200";
 
               if (isAnswerSubmitted) {
                 if (isCorrect) {
@@ -251,9 +279,9 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
             <div className="flex justify-end pt-2">
               <button
                 onClick={handleNext}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-600/20 flex items-center"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-600/20 flex items-center cursor-pointer"
               >
-                {currentQuestionIndex + 1 < selectedQuiz.questions.length ? 'Next Question' : 'View Quiz Results'}
+                {currentQuestionIndex + 1 < selectedQuiz.questions.length ? 'Next Question' : 'View Final Score & Roadmap'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </button>
             </div>
@@ -269,20 +297,45 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
           <div>
             <h3 className="text-3xl font-extrabold text-neutral-900 dark:text-white">Quiz Completed!</h3>
             <p className="text-neutral-500 dark:text-neutral-400 text-base mt-2">
-              You scored <span className="font-bold text-blue-600 dark:text-blue-400">{score}</span> out of <span className="font-bold">{selectedQuiz.questions.length}</span> ({Math.round((score / selectedQuiz.questions.length) * 100)}%)
+              You scored <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">{score}</span> out of <span className="font-bold text-2xl">{selectedQuiz.questions.length}</span> ({Math.round((score / selectedQuiz.questions.length) * 100)}%)
             </p>
             <div className="mt-3 inline-block px-4 py-1.5 rounded-full text-sm font-semibold border bg-neutral-100 dark:bg-neutral-700 border-neutral-200 dark:border-neutral-600 text-neutral-800 dark:text-neutral-200">
-              {score === 5 ? '🌟 Outstanding Mastery — Role Ready!' : score >= 3 ? '👍 Solid Foundation — Minor gaps to review' : '📚 Needs Practice — Check the career roadmap'}
+              {score >= 9 ? '🌟 Outstanding Mastery — Role Ready!' : score >= 7 ? '👍 Solid Foundation — Minor gaps to review' : '📚 Growth Opportunity — Level up with the career roadmap'}
             </div>
+          </div>
+
+          {/* Roadmap Recommendation Bridge Card */}
+          <div className="p-6 rounded-3xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-left max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+                <Compass className="w-4 h-4" />
+                <span>Recommended Learning Path</span>
+              </div>
+              <h4 className="text-base font-bold text-neutral-900 dark:text-white">
+                {selectedQuiz.roadmapRole} Career Roadmap
+              </h4>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                Follow curated step-by-step milestones to master missed topics and solidify production skills.
+              </p>
+            </div>
+            {onSelectRoadmap && (
+              <button
+                onClick={() => onSelectRoadmap(selectedQuiz.roadmapRole)}
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shrink-0 flex items-center shadow-xs transition-colors cursor-pointer"
+              >
+                <span>Open Roadmap</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+              </button>
+            )}
           </div>
 
           {/* Question by Question Review */}
           <div className="text-left space-y-4 max-w-2xl mx-auto pt-4 border-t border-neutral-100 dark:border-neutral-700">
-            <h4 className="text-sm font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">Detailed Review</h4>
+            <h4 className="text-sm font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">Detailed Review ({selectedQuiz.questions.length} Questions)</h4>
             {selectedQuiz.questions.map((q, idx) => {
               const isCorrect = userAnswers[idx] === q.correctIndex;
               return (
-                <div key={q.id} className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-700/60 text-sm">
+                <div key={q.id} className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700/60 text-sm">
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-semibold text-neutral-800 dark:text-neutral-200">
                       {idx + 1}. {q.question}
@@ -297,8 +350,11 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-                    <span className="font-semibold text-neutral-700 dark:text-neutral-300">Answer:</span> {q.options[q.correctIndex]}
+                  <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-2">
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-200">Correct Answer:</span> {q.options[q.correctIndex]}
+                  </p>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                    {q.explanation}
                   </p>
                 </div>
               );
@@ -308,7 +364,7 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <button
               onClick={() => handleRestart()}
-              className="px-6 py-3 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl transition-colors flex items-center"
+              className="px-6 py-3 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl transition-colors flex items-center cursor-pointer"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
               Retake This Quiz
@@ -318,9 +374,9 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ initialQuizId, onBackT
                 const nextIndex = (QUIZ_COLLECTION.findIndex(q => q.id === selectedQuiz.id) + 1) % QUIZ_COLLECTION.length;
                 handleRestart(QUIZ_COLLECTION[nextIndex]);
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-600/20 flex items-center"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-600/20 flex items-center cursor-pointer"
             >
-              Try Next Quiz Track
+              Try Next Quiz Topic
               <ArrowRight className="w-4 h-4 ml-2" />
             </button>
           </div>
