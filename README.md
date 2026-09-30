@@ -1,5 +1,9 @@
 # Job-Fit-Scorer
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-2563eb?style=for-the-badge&logo=github)](https://rushi-khairnar.github.io/Job-Fit-Scorer/)
+
+🌐 **Live Project:** [https://rushi-khairnar.github.io/Job-Fit-Scorer/](https://rushi-khairnar.github.io/Job-Fit-Scorer/)
+
 Job-Fit-Scorer is an intelligent talent-to-role matching application. It helps users discover their ideal career paths by analyzing their current skill sets against industry requirements, calculating semantic match scores, and providing personalized learning roadmaps to bridge any skill gaps.
 
 ## Features
@@ -51,5 +55,7 @@ Job-Fit-Scorer is an intelligent talent-to-role matching application. It helps u
 ## Deployment
 
 This project is configured to be automatically deployed to GitHub pages via GitHub Actions. Whenever you push to the `main` or `master` branch, the `.github/workflows/deploy.yml` workflow will build and deploy the application.
+
+- **Live URL:** [https://rushi-khairnar.github.io/Job-Fit-Scorer/](https://rushi-khairnar.github.io/Job-Fit-Scorer/)
 
 Make sure your repository has GitHub Pages enabled (under Settings > Pages) and set to use GitHub Actions as the deployment source.

@@ -38,7 +38,9 @@ import {
   User,
   Check,
   Building2,
-  FileDown
+  FileDown,
+  Globe,
+  Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -52,6 +54,9 @@ import { ProfileAuditor } from './components/ProfileAuditor';
 import { InterviewGenerator } from './components/InterviewGenerator';
 import { CultureAlignment } from './components/CultureAlignment';
 import { SalaryEstimator } from './components/SalaryEstimator';
+import { RealtimeMarketExplorer } from './components/RealtimeMarketExplorer';
+import { LiveIntelModal } from './components/LiveIntelModal';
+import { ResumeViewerModal } from './components/ResumeViewerModal';
 import { CoverLetterGenerator } from './components/CoverLetterGenerator';
 import { BulkResumeRanker } from './components/BulkResumeRanker';
 import { ApplicationTracker } from './components/ApplicationTracker';
@@ -98,6 +103,7 @@ export type ActiveToolTab =
   | 'interview-prep'       // Interview Prep Coach (All Roles)
   | 'culture-fit'          // Culture and Values Alignment
   | 'salary-estimator'     // Salary Calculator (India & Global)
+  | 'market-explorer'      // Real-Time Search-Grounded Market Explorer
   | 'cover-letter'         // Tailored Cover Letter Writer (Word & PDF)
   | 'bulk-ranker'          // Bulk Candidate Ranker
   | 'application-tracker'; // Application Pipeline Tracker
@@ -163,6 +169,21 @@ export default function App() {
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isCareerToolsOpen, setIsCareerToolsOpen] = useState(false);
   const toolsDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Live Market Intel State
+  const [isLiveIntelModalOpen, setIsLiveIntelModalOpen] = useState(false);
+  const [liveIntelRole, setLiveIntelRole] = useState('Data Scientist');
+  const [selectedIntelLocationKey, setSelectedIntelLocationKey] = useState('india-bangalore');
+
+  // Resume Viewer State
+  const [isResumeViewerOpen, setIsResumeViewerOpen] = useState(false);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [uploadedFileText, setUploadedFileText] = useState<string>(currentProfile.resumeText || '');
+
+  const handleOpenLiveIntel = (role: string) => {
+    setLiveIntelRole(role);
+    setIsLiveIntelModalOpen(true);
+  };
 
   // Sync profiles to localStorage
   useEffect(() => {
@@ -310,6 +331,8 @@ export default function App() {
   const handleCancelUpload = () => {
     setUploadedFileName('');
     setExtractedSkills([]);
+    setUploadedFileUrl(null);
+    setUploadedFileText('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -320,6 +343,8 @@ export default function App() {
     if (!file) return;
     
     setUploadedFileName(file.name);
+    const objectUrl = URL.createObjectURL(file);
+    setUploadedFileUrl(objectUrl);
     
     let text = "";
     try {
@@ -340,6 +365,8 @@ export default function App() {
       } else {
         text = await file.text();
       }
+
+      setUploadedFileText(text);
 
       // Simple regex match for skills
       const found = new Set<string>();
@@ -363,7 +390,7 @@ export default function App() {
           return {
             ...p,
             resumeFileName: file.name,
-            resumeText: text.slice(0, 5000),
+            resumeText: text.slice(0, 10000),
             savedSkills: extractedList.map(s => ({ name: s, level: getSkillLevel(s) as any }))
           };
         }
@@ -522,6 +549,31 @@ export default function App() {
           setUploadedFileName(file.name);
           handleFileUpload({ target: { files: [file] } } as any);
         }}
+        onViewResume={() => setIsResumeViewerOpen(true)}
+      />
+
+      {/* Real-Time Search-Grounded Intel Modal */}
+      <LiveIntelModal
+        role={liveIntelRole}
+        isOpen={isLiveIntelModalOpen}
+        onClose={() => setIsLiveIntelModalOpen(false)}
+        onOpenFullExplorer={(role, locKey) => {
+          setTargetRole(role);
+          setSelectedIntelLocationKey(locKey);
+          setAppState('market-explorer');
+        }}
+        isDarkMode={isDarkMode}
+      />
+
+      {/* Resume PDF & Text Viewer Modal */}
+      <ResumeViewerModal
+        isOpen={isResumeViewerOpen}
+        onClose={() => setIsResumeViewerOpen(false)}
+        fileName={uploadedFileName || currentProfile.resumeFileName || 'Resume.pdf'}
+        fileUrl={uploadedFileUrl}
+        resumeText={uploadedFileText || currentProfile.resumeText || ''}
+        detectedSkills={extractedSkills.length > 0 ? extractedSkills : currentProfile.savedSkills.map(s => s.name)}
+        isDarkMode={isDarkMode}
       />
 
       {/* Primary Top Navbar */}
@@ -692,6 +744,22 @@ export default function App() {
                           <div>
                             <div className="text-xs font-bold text-neutral-900 dark:text-white">Salary Calculator</div>
                             <div className="text-[11px] text-neutral-500">India metro hubs, global & currency</div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => { setAppState('market-explorer'); setIsCareerToolsOpen(false); }}
+                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors cursor-pointer"
+                        >
+                          <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                            <Globe className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center">
+                              <span>Market Explorer</span>
+                              <span className="ml-1.5 px-1.5 py-0.2 text-[9px] bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded font-semibold">Live Grounded</span>
+                            </div>
+                            <div className="text-[11px] text-neutral-500">Real-time 2026 salary, demand & skills</div>
                           </div>
                         </button>
                       </div>
@@ -873,12 +941,21 @@ export default function App() {
                             <FileText className="w-4 h-4 text-blue-600" />
                             <span>Active Resume: <strong>{uploadedFileName}</strong></span>
                           </div>
-                          <button
-                            onClick={handleCancelUpload}
-                            className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2 py-1 rounded-lg transition-colors flex items-center cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 mr-1" /> Remove
-                          </button>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => setIsResumeViewerOpen(true)}
+                              className="text-xs text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-100 dark:bg-blue-900/60 hover:bg-blue-200 dark:hover:bg-blue-800 px-2.5 py-1 rounded-lg transition-colors flex items-center cursor-pointer font-semibold"
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1" /> View / Read Resume
+                            </button>
+                            <button
+                              onClick={handleCancelUpload}
+                              className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2 py-1 rounded-lg transition-colors flex items-center cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> Remove
+                            </button>
+                          </div>
                         </div>
 
                         {extractedSkills.length > 0 && (
@@ -1164,6 +1241,16 @@ export default function App() {
                       icon: ClipboardList,
                       color: 'text-emerald-500',
                       bg: 'bg-emerald-50 dark:bg-emerald-950/50'
+                    },
+                    {
+                      id: 'market-explorer',
+                      num: '12',
+                      title: 'Live Market Explorer',
+                      tag: 'Search Grounded (2026)',
+                      desc: 'Real-time compensation percentiles, hiring velocity, remote flexibility, and emerging skill demand verified via Google Search.',
+                      icon: Globe,
+                      color: 'text-blue-500',
+                      bg: 'bg-blue-50 dark:bg-blue-950/50'
                     }
                   ].map((card) => {
                     const Icon = card.icon;
@@ -1254,22 +1341,35 @@ export default function App() {
                   </h2>
                 </div>
 
-                <div className="flex items-center space-x-3">
-                  <span className="text-xs font-semibold text-neutral-500">Sort By:</span>
-                  <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs">
-                    {(['semantic', 'base', 'gaps'] as const).map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setResultsSortBy(s)}
-                        className={`px-3 py-1 rounded-lg font-bold capitalize transition-all cursor-pointer ${
-                          resultsSortBy === s
-                            ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
-                            : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/60'
-                        }`}
-                      >
-                        {s === 'semantic' ? 'Smart Fit' : s === 'base' ? 'Exact Match' : 'Least Gaps'}
-                      </button>
-                    ))}
+                <div className="flex flex-wrap items-center gap-3">
+                  {(uploadedFileName || currentProfile.resumeFileName) && (
+                    <button
+                      type="button"
+                      onClick={() => setIsResumeViewerOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 flex items-center transition-all cursor-pointer shadow-2xs"
+                    >
+                      <Eye className="w-3.5 h-3.5 mr-1.5" />
+                      <span>View CV Document</span>
+                    </button>
+                  )}
+
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-semibold text-neutral-500">Sort By:</span>
+                    <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs">
+                      {(['semantic', 'base', 'gaps'] as const).map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setResultsSortBy(s)}
+                          className={`px-3 py-1 rounded-lg font-bold capitalize transition-all cursor-pointer ${
+                            resultsSortBy === s
+                              ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
+                              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/60'
+                          }`}
+                        >
+                          {s === 'semantic' ? 'Smart Fit' : s === 'base' ? 'Exact Match' : 'Least Gaps'}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1298,6 +1398,7 @@ export default function App() {
                       onSelectRoadmap={() => handleOpenRoadmap(job.title)}
                       onSelectQuiz={() => handleOpenQuiz(job.title)}
                       onBuildCV={() => handleOpenBuildCV(job.title, job.matchingSkills)}
+                      onOpenLiveIntel={() => handleOpenLiveIntel(job.title)}
                     />
                   ))}
               </div>
@@ -1385,6 +1486,26 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
             >
               <SalaryEstimator initialRole={targetRole} userSkills={extractedSkills} />
+            </motion.div>
+          )}
+
+          {/* REAL-TIME SEARCH-GROUNDED MARKET EXPLORER */}
+          {appState === 'market-explorer' && (
+            <motion.div
+              key="market-explorer"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <RealtimeMarketExplorer
+                initialRole={targetRole}
+                initialLocationKey={selectedIntelLocationKey}
+                isDarkMode={isDarkMode}
+                onSelectRoadmap={handleOpenRoadmap}
+                onSelectQuiz={handleOpenQuiz}
+                onBuildCV={(role) => handleOpenBuildCV(role, extractedSkills)}
+                onBackToHome={() => setAppState('upload')}
+              />
             </motion.div>
           )}
 

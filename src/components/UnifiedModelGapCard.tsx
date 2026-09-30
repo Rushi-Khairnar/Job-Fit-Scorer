@@ -10,7 +10,8 @@ import {
   BookOpen, 
   HelpCircle, 
   FileText,
-  Layers
+  Layers,
+  Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -30,6 +31,7 @@ interface UnifiedModelGapCardProps {
   onSelectRoadmap?: (role: string) => void;
   onSelectQuiz?: (role: string) => void;
   onBuildCV?: (role: string, matchingSkills: string[]) => void;
+  onOpenLiveIntel?: (role: string) => void;
 }
 
 export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
@@ -37,7 +39,8 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
   isDarkMode,
   onSelectRoadmap,
   onSelectQuiz,
-  onBuildCV
+  onBuildCV,
+  onOpenLiveIntel
 }) => {
   const [expanded, setExpanded] = useState(false);
   const uplift = (job.semanticScore - job.tfidfScore).toFixed(1);
@@ -245,6 +248,15 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                   Ready to learn these skills or prepare for this role?
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                  {onOpenLiveIntel && (
+                    <button
+                      onClick={() => onOpenLiveIntel(job.role)}
+                      className="px-3.5 py-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors flex items-center border border-indigo-200 dark:border-indigo-800 cursor-pointer"
+                    >
+                      <Globe className="w-3.5 h-3.5 mr-1.5" />
+                      Live Market Intel
+                    </button>
+                  )}
                   {onSelectRoadmap && (
                     <button
                       onClick={() => onSelectRoadmap(job.role)}

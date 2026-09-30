@@ -1,6 +1,6 @@
 {
-  "summary": "Comprehensive architectural plan to implement all 14 user requirements: header simplification with a categorized Career Tools dropdown, instant local account with saved profiles and resumes, 10-question multi-topic quizzes with roadmap recommendations, manual skill proficiency chips, interview prep for all roles, fixed Word/PDF 1-click downloads, enhanced GitHub profile auditing, expanded salary calculator with Indian cities and currency conversion, multi-format cover letter exports, culture fit overhaul, and refined light/dark themes.",
-  "updatedAt": "2026-09-30T09:06:38.999662458Z",
+  "summary": "Implementation plan for saving and tracking target job learning roadmaps across user profiles, with an active learning path enrollment button, milestone step completion checkboxes, an interactive progress tracker in the Account Vault, and a quick-resume banner on the homepage.",
+  "updatedAt": "2026-09-30T10:43:17.722987923Z",
   "requestFeedback": true,
   "userFacing": true
 }

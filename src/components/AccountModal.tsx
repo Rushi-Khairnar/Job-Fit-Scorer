@@ -12,7 +12,8 @@ import {
   X,
   Plus,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Eye
 } from 'lucide-react';
 
 export interface UserProfile {
@@ -38,6 +39,7 @@ interface AccountModalProps {
   onCreateProfile: (name: string, title: string) => void;
   onDeleteProfile: (profileId: string) => void;
   onUploadNewResume: (file: File) => void;
+  onViewResume?: () => void;
 }
 
 export const AccountModal: React.FC<AccountModalProps> = ({
@@ -49,7 +51,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   allProfiles,
   onCreateProfile,
   onDeleteProfile,
-  onUploadNewResume
+  onUploadNewResume,
+  onViewResume
 }) => {
   const [name, setName] = useState(currentProfile.name);
   const [email, setEmail] = useState(currentProfile.email);
@@ -233,19 +236,32 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             </div>
           </div>
 
-          <label className="cursor-pointer px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 hover:border-blue-500 flex items-center transition-all shadow-2xs">
-            <Upload className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
-            <span>{currentProfile.resumeFileName ? 'Replace Resume' : 'Upload Resume'}</span>
-            <input
-              type="file"
-              accept=".pdf,.docx,.doc,.txt"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) onUploadNewResume(f);
-              }}
-            />
-          </label>
+          <div className="flex items-center space-x-2">
+            {currentProfile.resumeFileName && onViewResume && (
+              <button
+                type="button"
+                onClick={onViewResume}
+                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 flex items-center transition-all cursor-pointer shadow-2xs"
+              >
+                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                <span>View / Read CV</span>
+              </button>
+            )}
+
+            <label className="cursor-pointer px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 hover:border-blue-500 flex items-center transition-all shadow-2xs">
+              <Upload className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
+              <span>{currentProfile.resumeFileName ? 'Replace' : 'Upload Resume'}</span>
+              <input
+                type="file"
+                accept=".pdf,.docx,.doc,.txt"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onUploadNewResume(f);
+                }}
+              />
+            </label>
+          </div>
         </div>
 
         {/* Stats & Progress Overview */}
