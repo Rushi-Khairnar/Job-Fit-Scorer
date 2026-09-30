@@ -137,10 +137,10 @@ def calculate_scores(resume_text, jobs_df):
 # ==========================================
 def main():
     st.title("🎯 Job-Fit Scorer")
-    st.markdown(\"""
+    st.markdown("""
     **Final Year BSc Data Science Project**  
     Matching Students to Job Roles Using NLP & Semantic Similarity.
-    \""")
+    """)
     
     st.divider()
     
@@ -156,7 +156,7 @@ def main():
                 for page in pdf.pages:
                     extracted = page.extract_text()
                     if extracted:
-                        resume_text += extracted + "\\n"
+                        resume_text += extracted + "\n"
         
         if not resume_text.strip():
             st.error("Could not extract text from the PDF. Please try a different file.")
