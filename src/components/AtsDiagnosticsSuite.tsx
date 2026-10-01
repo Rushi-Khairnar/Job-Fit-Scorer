@@ -30,6 +30,7 @@ import {
   runAtsParseSimulator,
   runSkillSegmentation,
   runActionVerbPowerScorer,
+  runResumeImpactScorer,
   runRedFlagDetector,
   runImpactQuantifier,
   runReadabilityToneAuditor,
@@ -38,6 +39,8 @@ import {
   AtsParseResult,
   SkillSegmentationResult,
   VerbAuditResult,
+  ResumeImpactScoreResult,
+  BulletImpactItem,
   RedFlagAuditResult,
   ImpactQuantifierResult,
   ReadabilityToneResult,
@@ -62,6 +65,20 @@ type DiagnosticsTab =
   | 'tone-grammar'
   | 'linkedin-scraper'
   | 'mock-interview';
+
+export type DiagnosticsStage = 'audit' | 'optimize' | 'practice';
+
+export const STAGE_FOR_TAB: Record<DiagnosticsTab, DiagnosticsStage> = {
+  'ats-parse': 'audit',
+  'tone-grammar': 'audit',
+  'red-flags': 'audit',
+  'verb-power': 'optimize',
+  'skills-segment': 'optimize',
+  'quantifier': 'optimize',
+  'tailor': 'optimize',
+  'mock-interview': 'practice',
+  'linkedin-scraper': 'practice'
+};
 
 interface ChatInterviewTurn {
   id: string;
@@ -119,9 +136,13 @@ B.S. in Computer Science | State University (Graduated 2019)`;
   const atsResult = useMemo(() => runAtsParseSimulator(effectiveResumeText), [effectiveResumeText]);
   const skillResult = useMemo(() => runSkillSegmentation(effectiveResumeText), [effectiveResumeText]);
   const verbResult = useMemo(() => runActionVerbPowerScorer(effectiveResumeText), [effectiveResumeText]);
+  const impactScoreResult = useMemo(() => runResumeImpactScorer(effectiveResumeText), [effectiveResumeText]);
   const redFlagResult = useMemo(() => runRedFlagDetector(effectiveResumeText), [effectiveResumeText]);
   const impactResult = useMemo(() => runImpactQuantifier(effectiveResumeText), [effectiveResumeText]);
   const readabilityResult = useMemo(() => runReadabilityToneAuditor(effectiveResumeText), [effectiveResumeText]);
+
+  // Impact Score Filter State
+  const [impactFilter, setImpactFilter] = useState<'all' | 'passive' | 'high'>('all');
 
   // 1-Click Tailor State
   const [tailorJobDescription, setTailorJobDescription] = useState<string>(
@@ -192,6 +213,24 @@ Requirements:
   const handleApplyRewrittenBullet = (original: string, rewritten: string) => {
     const updated = effectiveResumeText.replace(original, rewritten);
     onUpdateResumeText(updated);
+  };
+
+  const handleUpgradeAllPassiveBullets = () => {
+    let updatedText = effectiveResumeText;
+    impactScoreResult.bullets
+      .filter(b => b.impactLevel === 'passive')
+      .forEach(b => {
+        updatedText = updatedText.replace(b.originalText, b.recommendedRewrite);
+      });
+    onUpdateResumeText(updatedText);
+    copyToClipboard(updatedText, 'all-passive-upgraded');
+  };
+
+  const handleSwapWithActionVerb = (originalBullet: string, detectedPassivePhrase: string, actionVerb: string) => {
+    const reg = new RegExp(`\\b${detectedPassivePhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    const newBullet = originalBullet.replace(reg, actionVerb);
+    const capitalized = newBullet.charAt(0).toUpperCase() + newBullet.slice(1);
+    handleApplyRewrittenBullet(originalBullet, capitalized);
   };
 
   const handleImportLinkedIn = () => {
@@ -274,79 +313,184 @@ B.S. in Computer Science & Engineering`;
     }, 700);
   };
 
+  const currentStage = STAGE_FOR_TAB[activeTab];
+
+  const STAGES = [
+    {
+      id: 'audit' as DiagnosticsStage,
+      number: '01',
+      title: 'Audit & Diagnostics',
+      description: 'Machine parseability, reading grade, and compliance flags',
+      tools: [
+        { id: 'ats-parse' as DiagnosticsTab, label: 'ATS Simulator', icon: FileSearch, stat: `${atsResult.overallScore}% score` },
+        { id: 'tone-grammar' as DiagnosticsTab, label: 'Tone & Readability', icon: FileCheck2, stat: `Grade ${readabilityResult.fleschKincaidGrade}` },
+        { id: 'red-flags' as DiagnosticsTab, label: 'Bias & Red Flags', icon: AlertTriangle, stat: `${redFlagResult.flagsCount} flags` }
+      ]
+    },
+    {
+      id: 'optimize' as DiagnosticsStage,
+      number: '02',
+      title: 'Optimize & Impact',
+      description: 'Active verb power, skill balance, XYZ quantification, and tailoring',
+      tools: [
+        { id: 'verb-power' as DiagnosticsTab, label: 'Resume Impact Score', icon: Zap, stat: `${impactScoreResult.overallImpactScore}%` },
+        { id: 'skills-segment' as DiagnosticsTab, label: 'Hard vs. Soft Skills', icon: Cpu, stat: skillResult.ratio },
+        { id: 'quantifier' as DiagnosticsTab, label: 'Impact Quantifier', icon: TrendingUp, stat: `${impactResult.unquantifiedBullets.length} vague` },
+        { id: 'tailor' as DiagnosticsTab, label: '1-Click Tailor', icon: Wand2, stat: 'JD match' }
+      ]
+    },
+    {
+      id: 'practice' as DiagnosticsStage,
+      number: '03',
+      title: 'Practice & Connect',
+      description: 'Turn-based mock interview practice and LinkedIn automation',
+      tools: [
+        { id: 'mock-interview' as DiagnosticsTab, label: 'Mock AI Interview', icon: MessageSquare, stat: 'STAR session' },
+        { id: 'linkedin-scraper' as DiagnosticsTab, label: 'LinkedIn & Extension', icon: Linkedin, stat: 'Live sync' }
+      ]
+    }
+  ];
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-2">
-      {/* Header Hub Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-sm border border-blue-800/80">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-blue-500/20 text-blue-200 rounded-full text-xs font-semibold border border-blue-400/30">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-300" />
-              <span>Enterprise ATS Simulation & Intelligence Hub</span>
+      {/* Executive Clean Header */}
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 sm:p-7 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Enterprise Diagnostics & ATS Intelligence</span>
+              <span aria-hidden="true">·</span>
+              <span className="text-neutral-400">Target Role: {targetRoleTitle}</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight">
-              Resume Diagnostics & ATS Suite
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+              Resume Diagnostics & Optimization Suite
             </h1>
-            <p className="text-sm text-blue-100/90 max-w-2xl leading-relaxed">
-              Audit how real-world Applicant Tracking Systems read your resume, eliminate red flags and passive language, auto-tailor for target job postings, and practice with our interactive Mock AI Interviewer.
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+              Real-time applicant tracking simulation, action verb impact scoring, and structured interview coaching organized into three sequential workflow stages.
             </p>
           </div>
 
-          {/* Quick Score Glance */}
-          <div className="flex items-center gap-4 bg-white/10 backdrop-blur-xs p-4 rounded-2xl border border-white/15 shrink-0 self-start md:self-auto">
-            <div className="text-center">
-              <span className="text-[10px] uppercase font-bold text-blue-200 block">ATS Parse Score</span>
-              <span className="text-3xl font-black text-white">{atsResult.overallScore}%</span>
-              <span className="text-xs font-bold text-emerald-300 block">Grade {atsResult.grade}</span>
+          {/* Unboxed Tabular Health Vitals */}
+          <div className="flex items-center gap-6 sm:gap-8 pt-4 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-neutral-800 shrink-0">
+            <div>
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-0.5">
+                ATS Fidelity
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold font-mono tabular-nums text-neutral-900 dark:text-white">
+                  {atsResult.overallScore}%
+                </span>
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  Grade {atsResult.grade}
+                </span>
+              </div>
             </div>
-            <div className="h-10 w-px bg-white/20" />
-            <div className="text-center">
-              <span className="text-[10px] uppercase font-bold text-blue-200 block">Verb Power</span>
-              <span className="text-3xl font-black text-white">{verbResult.score}%</span>
-              <span className="text-xs text-blue-200 block">{verbResult.powerVerbsCount} Power Verbs</span>
+
+            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+
+            <div>
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-0.5">
+                Impact Score
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold font-mono tabular-nums text-neutral-900 dark:text-white">
+                  {impactScoreResult.overallImpactScore}%
+                </span>
+                <span className={`text-xs font-semibold ${
+                  impactScoreResult.overallImpactScore >= 85 ? 'text-emerald-600 dark:text-emerald-400' :
+                  impactScoreResult.overallImpactScore >= 70 ? 'text-blue-600 dark:text-blue-400' :
+                  'text-amber-600 dark:text-amber-400'
+                }`}>
+                  {impactScoreResult.impactRating.split(' ')[0]}
+                </span>
+              </div>
+            </div>
+
+            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+
+            <div>
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-0.5">
+                Readability
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold font-mono tabular-nums text-neutral-900 dark:text-white">
+                  {readabilityResult.fleschKincaidGrade}
+                </span>
+                <span className="text-xs font-medium text-neutral-500">
+                  Grade lvl
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex items-center space-x-1.5 overflow-x-auto pb-2 border-b border-neutral-200 dark:border-neutral-800 scrollbar-none">
-        {[
-          { id: 'ats-parse', label: '1. ATS Simulator', icon: FileSearch, badge: `${atsResult.overallScore}%` },
-          { id: 'skills-segment', label: '2. Hard vs Soft Skills', icon: Cpu, badge: skillResult.ratio },
-          { id: 'verb-power', label: '3. Verb Power Scorer', icon: Zap, badge: `${verbResult.score}%` },
-          { id: 'red-flags', label: '4. Red Flag Detector', icon: AlertTriangle, badge: `${redFlagResult.flagsCount} Flags` },
-          { id: 'tailor', label: '5. 1-Click Tailor', icon: Wand2 },
-          { id: 'quantifier', label: '6. Impact Quantifier', icon: TrendingUp, badge: `${impactResult.unquantifiedBullets.length} Vague` },
-          { id: 'tone-grammar', label: '7. Tone & Readability', icon: FileCheck2 },
-          { id: 'linkedin-scraper', label: '8. LinkedIn & Scraper', icon: Linkedin },
-          { id: 'mock-interview', label: '9. Mock AI Interview', icon: MessageSquare, highlight: true }
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id as DiagnosticsTab)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 whitespace-nowrap transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/60 border border-neutral-200 dark:border-neutral-700'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
-                }`}>
-                  {tab.badge}
+      {/* 3-Stage Workflow Navigation */}
+      <div className="space-y-3">
+        {/* Stage Selector Tabs */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 p-1.5 bg-neutral-100 dark:bg-neutral-800/70 rounded-2xl border border-neutral-200/60 dark:border-neutral-700/60">
+          {STAGES.map(stage => {
+            const isStageActive = currentStage === stage.id;
+            return (
+              <button
+                key={stage.id}
+                type="button"
+                onClick={() => {
+                  if (currentStage !== stage.id) {
+                    setActiveTab(stage.tools[0].id);
+                  }
+                }}
+                className={`p-3.5 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  isStageActive
+                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs border border-neutral-200/80 dark:border-neutral-700'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-neutral-800'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-[10px] font-mono font-bold tracking-wider uppercase opacity-60">
+                    STAGE {stage.number}
+                  </span>
+                  <span className="text-[11px] font-medium opacity-60">
+                    {stage.tools.length} Tools
+                  </span>
+                </div>
+                <div className="text-sm font-bold tracking-tight mt-1">
+                  {stage.title}
+                </div>
+                <p className="text-[11px] leading-relaxed text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-1">
+                  {stage.description}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Sub-Tool Navigation Strip */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-neutral-200 dark:border-neutral-800 scrollbar-none">
+          {STAGES.find(s => s.id === currentStage)?.tools.map(tool => {
+            const Icon = tool.icon;
+            const isToolActive = activeTab === tool.id;
+            return (
+              <button
+                key={tool.id}
+                type="button"
+                onClick={() => setActiveTab(tool.id)}
+                className={`px-3.5 py-2 text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer whitespace-nowrap border-b-2 -mb-px ${
+                  isToolActive
+                    ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
+                    : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tool.label}</span>
+                <span className="text-[10px] font-mono text-neutral-400 font-normal">
+                  ({tool.stat})
                 </span>
-              )}
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* 1. ATS PARSE-ABILITY SIMULATOR */}
@@ -440,43 +584,51 @@ B.S. in Computer Science & Engineering`;
       {/* 2. SOFT VS HARD SKILLS SEGMENTATION */}
       {activeTab === 'skills-segment' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center space-x-2">
-                  <Cpu className="w-4 h-4 text-blue-600" />
-                  <span>Hard / Technical Skills ({skillResult.hardSkills.length})</span>
-                </h3>
-                <span className="text-xs font-black text-blue-600">{skillResult.hardScore}% Score</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center space-x-2">
+                  <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Hard & Technical Skills ({skillResult.hardSkills.length})
+                  </h3>
+                </div>
+                <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                  {skillResult.hardScore}% Score
+                </span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {skillResult.hardSkills.map(s => (
                   <span
                     key={s.name}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-800"
+                    className="text-xs px-2.5 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-medium"
                   >
-                    {s.name} <span className="opacity-60 text-[10px]">({s.category})</span>
+                    {s.name} <span className="text-neutral-400 dark:text-neutral-500 text-[10px]">· {s.category}</span>
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center space-x-2">
-                  <Scale className="w-4 h-4 text-purple-600" />
-                  <span>Soft / Interpersonal Skills ({skillResult.softSkills.length})</span>
-                </h3>
-                <span className="text-xs font-black text-purple-600">{skillResult.softScore}% Score</span>
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center space-x-2">
+                  <Scale className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Soft & Leadership Skills ({skillResult.softSkills.length})
+                  </h3>
+                </div>
+                <span className="text-xs font-mono font-bold text-purple-600 dark:text-purple-400">
+                  {skillResult.softScore}% Score
+                </span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {skillResult.softSkills.length > 0 ? (
                   skillResult.softSkills.map(s => (
                     <span
                       key={s.name}
-                      className="text-xs px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-medium border border-purple-200 dark:border-purple-800"
+                      className="text-xs px-2.5 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-medium"
                     >
-                      {s.name} <span className="opacity-60 text-[10px]">({s.category})</span>
+                      {s.name} <span className="text-neutral-400 dark:text-neutral-500 text-[10px]">· {s.category}</span>
                     </span>
                   ))
                 ) : (
@@ -488,14 +640,14 @@ B.S. in Computer Science & Engineering`;
 
           {/* Missing Crucial Soft Skills Recommendation */}
           {skillResult.missingCrucialSoftSkills.length > 0 && (
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 flex items-start space-x-3">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
                   Recommended High-Value Soft Skills to Integrate:
                 </h4>
-                <p className="text-xs text-amber-800 dark:text-amber-300">
-                  Consider weaving these into your bullet points: <strong>{skillResult.missingCrucialSoftSkills.join(', ')}</strong>.
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Recruiters expect balance across leadership and delivery. Consider weaving these into your bullet points: <strong className="text-neutral-900 dark:text-white">{skillResult.missingCrucialSoftSkills.join(', ')}</strong>.
                 </p>
               </div>
             </div>
@@ -503,118 +655,341 @@ B.S. in Computer Science & Engineering`;
         </div>
       )}
 
-      {/* 3. ACTION VERB POWER SCORER */}
+      {/* 3. RESUME IMPACT SCORE & ACTION VERB ENGINE */}
       {activeTab === 'verb-power' && (
         <div className="space-y-6">
-          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                  Action Verb Power Analysis
+          {/* Main Score & Distribution Dashboard */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xs space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Resume Impact Scorer & Passive Language Detector</span>
+                </div>
+                <h3 className="text-xl md:text-2xl font-black text-neutral-900 dark:text-white">
+                  Resume Impact Score: {impactScoreResult.overallImpactScore}%
                 </h3>
-                <p className="text-xs text-neutral-500">
-                  Replacing passive phrases ("helped", "responsible for") with active verbs increases callback rates by 2.4x.
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-xl leading-relaxed">
+                  {impactScoreResult.summaryTip} Enterprise recruiters and modern ATS screeners look for definitive action verbs and reject passive "responsible for" phrasing.
                 </p>
               </div>
-              <div className="text-right">
-                <span className="text-2xl font-black text-blue-600">{verbResult.score}%</span>
-                <span className="text-[10px] text-neutral-400 block">Impact Score</span>
+
+              {/* Large Score Meter & Rating Badge */}
+              <div className="flex items-center gap-4 bg-neutral-50 dark:bg-neutral-900/60 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 shrink-0 self-start lg:self-auto">
+                <div className="text-center">
+                  <span className="text-[10px] uppercase font-bold text-neutral-400 block">Overall Impact</span>
+                  <span className="text-4xl font-black text-blue-600 dark:text-blue-400">
+                    {impactScoreResult.overallImpactScore}%
+                  </span>
+                  <span className={`text-[11px] font-bold block mt-0.5 ${
+                    impactScoreResult.overallImpactScore >= 85 ? 'text-emerald-600 dark:text-emerald-400' :
+                    impactScoreResult.overallImpactScore >= 70 ? 'text-blue-600 dark:text-blue-400' :
+                    impactScoreResult.overallImpactScore >= 55 ? 'text-amber-600 dark:text-amber-400' :
+                    'text-rose-600 dark:text-rose-400'
+                  }`}>
+                    {impactScoreResult.impactRating}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Weak Verb Instances Found with 1-Click Fixes */}
-            <div className="space-y-3 pt-2">
-              <h4 className="text-xs font-extrabold uppercase text-neutral-500 tracking-wider">
-                Detected Passive Phrasing ({verbResult.weakVerbInstances.length})
-              </h4>
-              {verbResult.weakVerbInstances.length > 0 ? (
-                verbResult.weakVerbInstances.map((inst, i) => (
-                  <div
-                    key={i}
-                    className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center">
-                        <XCircle className="w-3.5 h-3.5 mr-1" /> Weak Verb: "{inst.matchedWeak}"
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyRewrittenBullet(inst.originalBullet, inst.rewrittenBullet)}
-                        className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center cursor-pointer"
-                      >
-                        <Wand2 className="w-3.5 h-3.5 mr-1" /> 1-Click Replace in Resume
-                      </button>
-                    </div>
-                    <p className="text-xs text-neutral-600 dark:text-neutral-400 font-mono">
-                      Current: "{inst.originalBullet}"
-                    </p>
-                    <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 text-xs font-semibold flex items-center justify-between">
-                      <span>Suggested: "{inst.rewrittenBullet}"</span>
-                      <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 ml-2 shrink-0">Power Fix</span>
-                    </div>
+            {/* Tri-Color Stacked Impact Distribution Bar */}
+            <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-neutral-600 dark:text-neutral-300">
+                  Bullet Impact Breakdown ({impactScoreResult.totalBullets} Total Bullets Analyzed)
+                </span>
+                <span className="text-neutral-400 text-[11px]">
+                  {impactScoreResult.highImpactCount} High · {impactScoreResult.moderateImpactCount} Moderate · {impactScoreResult.passiveImpactCount} Passive
+                </span>
+              </div>
+              <div className="h-3 w-full bg-neutral-100 dark:bg-neutral-700/50 rounded-full overflow-hidden flex">
+                <div
+                  className="bg-emerald-500 h-full transition-all duration-300"
+                  style={{ width: `${impactScoreResult.highImpactPct}%` }}
+                  title={`High Impact: ${impactScoreResult.highImpactPct}%`}
+                />
+                <div
+                  className="bg-blue-500 h-full transition-all duration-300"
+                  style={{ width: `${impactScoreResult.moderateImpactPct}%` }}
+                  title={`Moderate: ${impactScoreResult.moderateImpactPct}%`}
+                />
+                <div
+                  className="bg-rose-500 h-full transition-all duration-300"
+                  style={{ width: `${impactScoreResult.passiveImpactPct}%` }}
+                  title={`Passive: ${impactScoreResult.passiveImpactPct}%`}
+                />
+              </div>
+
+              {/* 3 Metric Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 block">High Impact (Action Verbs)</span>
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400">{impactScoreResult.highImpactPct}% of all bullets</span>
                   </div>
-                ))
-              ) : (
-                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center space-x-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>No weak verbs detected! All bullet points begin with strong impact verbs.</span>
+                  <span className="text-2xl font-black text-emerald-700 dark:text-emerald-300">{impactScoreResult.highImpactCount}</span>
                 </div>
-              )}
+
+                <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold text-blue-800 dark:text-blue-300 block">Moderate Impact</span>
+                    <span className="text-xs text-blue-600 dark:text-blue-400">{impactScoreResult.moderateImpactPct}% standard phrasing</span>
+                  </div>
+                  <span className="text-2xl font-black text-blue-700 dark:text-blue-300">{impactScoreResult.moderateImpactCount}</span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold text-rose-800 dark:text-rose-300 block">Passive Language Flags</span>
+                    <span className="text-xs text-rose-600 dark:text-rose-400">{impactScoreResult.passiveImpactPct}% need action verbs</span>
+                  </div>
+                  <span className="text-2xl font-black text-rose-700 dark:text-rose-300">{impactScoreResult.passiveImpactCount}</span>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Action Toolbar & Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+            <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <span className="text-xs font-bold text-neutral-500 mr-1">Filter:</span>
+              <button
+                type="button"
+                onClick={() => setImpactFilter('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  impactFilter === 'all'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
+                }`}
+              >
+                All Bullets ({impactScoreResult.totalBullets})
+              </button>
+              <button
+                type="button"
+                onClick={() => setImpactFilter('passive')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+                  impactFilter === 'passive'
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
+                }`}
+              >
+                <span>Passive Only</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-black">
+                  {impactScoreResult.passiveImpactCount}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setImpactFilter('high')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  impactFilter === 'high'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
+                }`}
+              >
+                High Impact ({impactScoreResult.highImpactCount})
+              </button>
+            </div>
+
+            {impactScoreResult.passiveImpactCount > 0 && (
+              <button
+                type="button"
+                onClick={handleUpgradeAllPassiveBullets}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center justify-center space-x-1.5 shadow-xs transition-all cursor-pointer shrink-0"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                <span>Upgrade All Passive Bullets (1-Click)</span>
+              </button>
+            )}
+          </div>
+
+          {/* Bullet-by-Bullet Deep Dive List */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500">
+              Bullet-by-Bullet Impact Analysis & Action Verb Swaps
+            </h4>
+
+            {impactScoreResult.bullets
+              .filter(b => {
+                if (impactFilter === 'passive') return b.impactLevel === 'passive';
+                if (impactFilter === 'high') return b.impactLevel === 'high';
+                return true;
+              })
+              .map((bullet) => (
+                <div
+                  key={bullet.id}
+                  className={`p-5 rounded-3xl border transition-all space-y-3.5 ${
+                    bullet.impactLevel === 'passive'
+                      ? 'bg-white dark:bg-neutral-800 border-rose-200 dark:border-rose-900/60 shadow-xs'
+                      : bullet.impactLevel === 'high'
+                      ? 'bg-white dark:bg-neutral-800 border-emerald-200 dark:border-emerald-900/60'
+                      : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'
+                  }`}
+                >
+                  {/* Status Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2">
+                      {bullet.impactLevel === 'passive' ? (
+                        <span className="inline-flex items-center space-x-1 text-xs font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-800">
+                          <XCircle className="w-3.5 h-3.5 mr-0.5" />
+                          <span>Passive Language Detected: "{bullet.detectedPassivePhrases.join(', ')}"</span>
+                        </span>
+                      ) : bullet.impactLevel === 'high' ? (
+                        <span className="inline-flex items-center space-x-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-0.5" />
+                          <span>High Impact Action Verb: "{bullet.leadVerb}"</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center space-x-1 text-xs font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-800">
+                          <span>Moderate Impact: "{bullet.leadVerb}"</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {bullet.impactLevel === 'passive' && (
+                      <button
+                        type="button"
+                        onClick={() => handleApplyRewrittenBullet(bullet.originalText, bullet.recommendedRewrite)}
+                        className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center space-x-1 cursor-pointer transition-all shadow-2xs self-start sm:self-auto"
+                      >
+                        <Wand2 className="w-3.5 h-3.5" />
+                        <span>Apply Power Rewrite</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Original Bullet */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-0.5">
+                      Current Bullet Point
+                    </span>
+                    <p className="text-xs font-mono text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/60 p-3 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 leading-relaxed">
+                      "{bullet.originalText}"
+                    </p>
+                  </div>
+
+                  {/* Suggestions & Action Verb Options (for passive or moderate) */}
+                  {bullet.impactLevel !== 'high' && (
+                    <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center">
+                          <Sparkles className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                          <span>Recommended Action Verb Rewrite:</span>
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400">
+                          Instant Fix
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-neutral-900 dark:text-white leading-relaxed">
+                        "{bullet.recommendedRewrite}"
+                      </p>
+
+                      {/* Contextual Action Verb Chips */}
+                      <div className="space-y-1.5 pt-1 border-t border-blue-200/60 dark:border-blue-800/60">
+                        <span className="text-[11px] font-bold text-blue-800 dark:text-blue-300 block">
+                          Or swap with industry-specific power verbs (click to apply):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {bullet.suggestedActionVerbs.flatMap(cat => cat.verbs).map((verb) => (
+                            <button
+                              key={verb}
+                              type="button"
+                              onClick={() => {
+                                const phraseToReplace = bullet.detectedPassivePhrases[0] || bullet.leadVerb || '';
+                                handleSwapWithActionVerb(bullet.originalText, phraseToReplace, verb);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-white dark:bg-neutral-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-700 shadow-2xs transition-all cursor-pointer"
+                              title={`Replace passive phrase with "${verb}"`}
+                            >
+                              + {verb}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+
+          {/* Active Power Verbs Cloud */}
+          {impactScoreResult.powerVerbsDetected.length > 0 && (
+            <div className="p-5 rounded-3xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3">
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 flex items-center space-x-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Recognized Power Action Verbs in Your Resume ({impactScoreResult.powerVerbsDetected.length})</span>
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {impactScoreResult.powerVerbsDetected.map(pv => (
+                  <span
+                    key={pv}
+                    className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800"
+                  >
+                    ✓ {pv}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* 4. BIAS & RED FLAG DETECTOR */}
       {activeTab === 'red-flags' && (
         <div className="space-y-6">
-          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                  Bias, Clichés & Red Flag Detector
+          <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 space-y-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center space-x-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  <span>Bias, Clichés & Red Flag Detector</span>
                 </h3>
-                <p className="text-xs text-neutral-500">
-                  Scans for archaic dates, corporate buzzwords, and personal demographic data that trigger unconscious bias.
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Scans for archaic dates, corporate buzzwords, and personal demographic data that trigger bias.
                 </p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                redFlagResult.riskLevel === 'Low' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300' :
-                redFlagResult.riskLevel === 'Moderate' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300' :
-                'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300'
-              }`}>
-                {redFlagResult.riskLevel} Risk ({redFlagResult.flagsCount} items)
-              </span>
+              <div className="flex items-center gap-2 font-mono text-xs font-semibold">
+                <span className={
+                  redFlagResult.riskLevel === 'Low' ? 'text-emerald-600 dark:text-emerald-400' :
+                  redFlagResult.riskLevel === 'Moderate' ? 'text-amber-600 dark:text-amber-400' :
+                  'text-rose-600 dark:text-rose-400'
+                }>
+                  ● {redFlagResult.riskLevel} Risk
+                </span>
+                <span className="text-neutral-300 dark:text-neutral-700">·</span>
+                <span className="text-neutral-600 dark:text-neutral-400">{redFlagResult.flagsCount} items flagged</span>
+              </div>
             </div>
 
-            <div className="space-y-3 pt-2">
+            <div className="space-y-3">
               {redFlagResult.findings.length > 0 ? (
                 redFlagResult.findings.map((finding, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-1.5"
+                    className="p-4 rounded-xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center">
-                        <AlertTriangle className="w-3.5 h-3.5 mr-1.5 text-amber-500" />
-                        {finding.category}: <span className="text-neutral-500 ml-1 font-normal">"{finding.snippet}"</span>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-neutral-900 dark:text-white flex items-center">
+                        <AlertTriangle className="w-3.5 h-3.5 mr-1.5 text-amber-500 shrink-0" />
+                        {finding.category}: <span className="text-neutral-500 dark:text-neutral-400 ml-1 font-mono">"{finding.snippet}"</span>
                       </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                        {finding.severity} severity
+                      <span className="text-[11px] font-mono uppercase text-amber-600 dark:text-amber-400 font-semibold">
+                        {finding.severity}
                       </span>
                     </div>
-                    <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                       {finding.issue}
                     </p>
-                    <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                      💡 Recommendation: {finding.recommendation}
+                    <div className="text-xs font-medium text-blue-600 dark:text-blue-400 pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
+                      Recommendation: {finding.recommendation}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center space-x-2">
+                <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center space-x-2 border border-emerald-200/60 dark:border-emerald-900/40">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Clean audit! No personal demographic bias traps, vintage email domains, or clichés detected.</span>
+                  <span>Clean audit! No personal demographic bias traps, vintage email domains, or buzzwords detected.</span>
                 </div>
               )}
             </div>
@@ -625,26 +1000,26 @@ B.S. in Computer Science & Engineering`;
       {/* 5. ONE-CLICK RESUME TAILORING */}
       {activeTab === 'tailor' && (
         <div className="space-y-6">
-          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center space-x-2">
-                <Wand2 className="w-4 h-4 text-blue-600" />
-                <span>One-Click Resume Tailoring</span>
+          <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 space-y-5 shadow-xs">
+            <div className="space-y-1 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center space-x-2">
+                <Wand2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span>One-Click Role Tailoring</span>
               </h3>
-              <p className="text-xs text-neutral-500 mt-0.5">
-                Paste any target Job Description below. The engine will detect missing required keywords and automatically weave them into your experience bullets while preserving factual experience.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Paste any target Job Description below. The engine scans for missing required keywords and automatically weaves them into your experience bullets while preserving factual honesty.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Target Job Description
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Target Job Description Requirements
               </label>
               <textarea
                 value={tailorJobDescription}
                 onChange={e => setTailorJobDescription(e.target.value)}
                 rows={4}
-                className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-xs font-mono text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50/70 dark:bg-neutral-800/50 text-xs font-mono text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 leading-relaxed"
                 placeholder="Paste Job Description here..."
               />
             </div>
@@ -662,33 +1037,33 @@ B.S. in Computer Science & Engineering`;
             </button>
 
             {tailoredResult && (
-              <div className="space-y-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800">
+              <div className="space-y-4 pt-4 border-t border-neutral-200/80 dark:border-neutral-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40">
                   <div>
-                    <span className="text-xs font-bold text-blue-900 dark:text-blue-200 block">
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white block">
                       ATS Keyword Match Score Improvement
                     </span>
-                    <span className="text-[11px] text-blue-700 dark:text-blue-400">
-                      Before: <strong>{tailoredResult.matchScoreBefore}%</strong> → Tailored: <strong>{tailoredResult.matchScoreAfter}%</strong>
+                    <span className="text-xs text-neutral-600 dark:text-neutral-400 font-mono">
+                      Before: {tailoredResult.matchScoreBefore}% → Tailored: <strong className="text-blue-600 dark:text-blue-400">{tailoredResult.matchScoreAfter}%</strong>
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleApplyTailoredResume(tailoredResult.tailoredText)}
-                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center cursor-pointer shadow-xs"
+                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center cursor-pointer shadow-xs shrink-0 self-start sm:self-auto"
                   >
                     {copiedKey === 'applied-tailored' ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
-                    <span>{copiedKey === 'applied-tailored' ? 'Applied & Copied!' : 'Apply to Resume'}</span>
+                    <span>{copiedKey === 'applied-tailored' ? 'Applied & Copied!' : 'Apply to Active Resume'}</span>
                   </button>
                 </div>
 
                 <div className="space-y-2">
                   <h4 className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                    Keyword Optimization Diff
+                    Keyword Optimization Preview
                   </h4>
-                  <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                     {tailoredResult.diffSummary.filter(d => d.type === 'optimized').map((d, idx) => (
-                      <div key={idx} className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200 font-mono">
+                      <div key={idx} className="p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 text-xs text-neutral-800 dark:text-neutral-200 font-mono leading-relaxed">
                         {d.text}
                       </div>
                     ))}
@@ -703,45 +1078,46 @@ B.S. in Computer Science & Engineering`;
       {/* 6. IMPACT QUANTIFIER PROMPT */}
       {activeTab === 'quantifier' && (
         <div className="space-y-6">
-          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                  Impact Quantifier (Google XYZ Formula)
+          <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 space-y-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center space-x-2">
+                  <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span>Impact Quantifier (Google XYZ Formula)</span>
                 </h3>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   ATS parsers look for numbers (%, $, scale). These bullet points lack measurable proof.
                 </p>
               </div>
-              <span className="text-xs font-bold text-blue-600">
+              <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
                 {impactResult.quantifiedCount} of {impactResult.totalBullets} Bullets Quantified
               </span>
             </div>
 
-            <div className="space-y-3 pt-2">
+            <div className="space-y-4">
               {impactResult.unquantifiedBullets.map((unq, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2.5"
+                  className="p-5 rounded-xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 space-y-3"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                      Unquantified Bullet:
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+                    <span className="font-bold text-neutral-700 dark:text-neutral-300">
+                      Unquantified Experience Bullet:
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                      Suggested: {unq.suggestedMetricType}
+                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                      Suggested Metric: {unq.suggestedMetricType}
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-neutral-600 dark:text-neutral-400">
+                  <p className="text-xs font-mono text-neutral-800 dark:text-neutral-200 bg-white dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 leading-relaxed">
                     "{unq.original}"
                   </p>
 
-                  <div className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2">
-                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 block">
-                      Google XYZ Template:
+                  <div className="p-3.5 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 space-y-2">
+                    <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 block uppercase tracking-wider">
+                      Google XYZ Structure Recommendation:
                     </span>
-                    <p className="text-xs text-neutral-700 dark:text-neutral-300 italic">
-                      {unq.xyzTemplate}
+                    <p className="text-xs text-neutral-700 dark:text-neutral-300 italic leading-relaxed">
+                      "{unq.xyzTemplate}"
                     </p>
                     <button
                       type="button"
@@ -749,9 +1125,9 @@ B.S. in Computer Science & Engineering`;
                         const enhanced = `${unq.original}, resulting in a 35% latency improvement and $12k annual cloud infrastructure savings.`;
                         handleApplyRewrittenBullet(unq.original, enhanced);
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center cursor-pointer transition-all"
+                      className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center cursor-pointer transition-all shadow-2xs"
                     >
-                      <Sparkles className="w-3.5 h-3.5 mr-1" />
+                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                       <span>Inject Realistic Benchmark Metrics</span>
                     </button>
                   </div>
@@ -766,33 +1142,33 @@ B.S. in Computer Science & Engineering`;
       {activeTab === 'tone-grammar' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-center space-y-1">
-              <span className="text-xs font-bold text-neutral-500 uppercase">Tone Confidence</span>
-              <div className="text-3xl font-black text-blue-600">{readabilityResult.toneConfidenceScore}%</div>
-              <span className="text-[11px] text-neutral-400">Authoritative & Direct</span>
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 text-center space-y-1 shadow-xs">
+              <span className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider block">Tone Confidence</span>
+              <div className="text-3xl font-bold font-mono text-blue-600 dark:text-blue-400">{readabilityResult.toneConfidenceScore}%</div>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">Authoritative & Direct</span>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-center space-y-1">
-              <span className="text-xs font-bold text-neutral-500 uppercase">Flesch-Kincaid Grade</span>
-              <div className="text-3xl font-black text-neutral-900 dark:text-white">Grade {readabilityResult.fleschKincaidGrade}</div>
-              <span className="text-[11px] text-neutral-400">Ideal range: 8 – 11</span>
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 text-center space-y-1 shadow-xs">
+              <span className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider block">Flesch-Kincaid</span>
+              <div className="text-3xl font-bold font-mono text-neutral-900 dark:text-white">Grade {readabilityResult.fleschKincaidGrade}</div>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">Target Range: 8 – 11</span>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-center space-y-1">
-              <span className="text-xs font-bold text-neutral-500 uppercase">Avg Words / Sentence</span>
-              <div className="text-3xl font-black text-neutral-900 dark:text-white">{readabilityResult.avgWordsPerSentence}</div>
-              <span className="text-[11px] text-neutral-400">Concise bullet density</span>
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 text-center space-y-1 shadow-xs">
+              <span className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider block">Words / Sentence</span>
+              <div className="text-3xl font-bold font-mono text-neutral-900 dark:text-white">{readabilityResult.avgWordsPerSentence}</div>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">Concise bullet density</span>
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3">
-            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+          <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 space-y-4 shadow-xs">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white pb-3 border-b border-neutral-100 dark:border-neutral-800">
               Tone & Readability Suggestions
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {readabilityResult.suggestions.map((sug, i) => (
-                <div key={i} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 text-xs text-neutral-700 dark:text-neutral-300 flex items-center space-x-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                <div key={i} className="p-3.5 rounded-xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 text-xs text-neutral-700 dark:text-neutral-300 flex items-center space-x-2.5 leading-relaxed">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>{sug}</span>
                 </div>
               ))}
@@ -843,36 +1219,37 @@ B.S. in Computer Science & Engineering`;
           </div>
 
           {/* Browser Extension Job Scraper Bundle */}
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white border border-indigo-800 space-y-4">
+          <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 space-y-4 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
-                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-400/30">
+                <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  <ExternalLink className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span>Companion Chrome Extension (Manifest V3)</span>
                 </div>
-                <h3 className="text-base font-black">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
                   1-Click Job Scraper Browser Extension
                 </h3>
-                <p className="text-xs text-neutral-300 max-w-xl">
-                  Pull job postings straight from LinkedIn, Indeed, Greenhouse, or Lever into your clipboard with a single click.
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 max-w-xl leading-relaxed">
+                  Extract job descriptions directly from LinkedIn, Indeed, Greenhouse, or Lever into your clipboard with a single click.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => downloadChromeExtensionZip()}
-                className="px-4 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold flex items-center justify-center cursor-pointer transition-all shadow-sm shrink-0"
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center cursor-pointer transition-all shadow-xs shrink-0 self-start sm:self-auto"
               >
                 <Download className="w-4 h-4 mr-1.5" />
-                <span>Download Extension ZIP</span>
+                <span>Download Extension Package (ZIP)</span>
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-2 text-xs text-neutral-300">
-              <span className="font-bold text-white block">Installation Guide (Takes 30 seconds):</span>
-              <ol className="list-decimal list-inside space-y-1 text-neutral-300">
-                <li>Download the ZIP above and extract the files to a folder on your computer.</li>
-                <li>In Google Chrome or Brave, navigate to <code className="text-blue-300 bg-white/10 px-1 py-0.5 rounded">chrome://extensions</code></li>
-                <li>Turn on <strong>Developer mode</strong> in the top-right corner, then click <strong>Load unpacked</strong> and select the extracted folder.</li>
+            <div className="p-4 rounded-xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2 text-xs text-neutral-600 dark:text-neutral-300">
+              <span className="font-bold text-neutral-900 dark:text-white block">Installation Guide (Takes 30 seconds):</span>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Download the ZIP package and extract the folder on your computer.</li>
+                <li>In Google Chrome or Brave, navigate to <code className="text-blue-600 dark:text-blue-400 bg-white dark:bg-neutral-900 px-1.5 py-0.5 rounded border border-neutral-200/80 dark:border-neutral-700 font-mono">chrome://extensions</code></li>
+                <li>Enable <strong>Developer mode</strong> in the top-right corner, then click <strong>Load unpacked</strong> and select the extracted folder.</li>
               </ol>
             </div>
           </div>
@@ -882,19 +1259,19 @@ B.S. in Computer Science & Engineering`;
       {/* 9. MOCK AI INTERVIEW SIMULATOR */}
       {activeTab === 'mock-interview' && (
         <div className="space-y-4">
-          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
+          <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+            <div className="space-y-1">
               <div className="flex items-center space-x-2">
-                <Bot className="w-5 h-5 text-blue-600" />
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                  Mock AI Interview Simulator ({targetRoleTitle})
+                <Bot className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Mock Technical Interview Simulator
                 </h3>
               </div>
-              <p className="text-xs text-neutral-500 mt-0.5">
-                Simulates a realistic technical screening tailored to your resume gaps. Answers are evaluated in real-time.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Simulates real-world technical screening questions aligned with your {targetRoleTitle} target.
               </p>
             </div>
-            <span className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800">
+            <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
               Question {Math.min(currentQuestionIndex + 1, interviewQuestions.length)} of {interviewQuestions.length}
             </span>
           </div>

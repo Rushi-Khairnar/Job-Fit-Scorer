@@ -49,6 +49,35 @@ export interface SkillSegmentationResult {
   recommendations: string[];
 }
 
+export interface BulletImpactItem {
+  id: string;
+  originalText: string;
+  impactLevel: 'high' | 'moderate' | 'passive';
+  leadVerb: string | null;
+  detectedPassivePhrases: string[];
+  suggestedActionVerbs: {
+    category: string;
+    verbs: string[];
+  }[];
+  recommendedRewrite: string;
+}
+
+export interface ResumeImpactScoreResult {
+  overallImpactScore: number; // 0-100
+  impactRating: 'Elite Executive Impact' | 'Strong Active Impact' | 'Moderate Impact' | 'Passive / Needs Action';
+  totalBullets: number;
+  highImpactCount: number;
+  moderateImpactCount: number;
+  passiveImpactCount: number;
+  highImpactPct: number;
+  moderateImpactPct: number;
+  passiveImpactPct: number;
+  bullets: BulletImpactItem[];
+  passivePhrasesDetected: string[];
+  powerVerbsDetected: string[];
+  summaryTip: string;
+}
+
 export interface VerbAuditResult {
   score: number; // 0-100
   totalVerbs: number;
@@ -405,6 +434,229 @@ export function runActionVerbPowerScorer(text: string): VerbAuditResult {
     powerVerbsCount: powerVerbsFound.length,
     weakVerbInstances: weakInstances.slice(0, 8),
     topPowerVerbsFound: powerVerbsFound
+  };
+}
+
+// ==========================================
+// RESUME IMPACT SCORE & PASSIVE LANGUAGE PARSER
+// ==========================================
+
+const PASSIVE_PATTERNS: Array<{
+  pattern: RegExp;
+  label: string;
+  category: 'passive_verb' | 'weak_ownership' | 'vague_contribution';
+  suggestions: {
+    leadership: string[];
+    technical: string[];
+    optimization: string[];
+  };
+}> = [
+  {
+    pattern: /\b(?:was\s+)?responsible\s+for\b/i,
+    label: 'responsible for',
+    category: 'weak_ownership',
+    suggestions: {
+      leadership: ['Directed', 'Orchestrated', 'Spearheaded', 'Governed'],
+      technical: ['Engineered', 'Architected', 'Administered', 'Maintained'],
+      optimization: ['Streamlined', 'Consolidated', 'Standardized']
+    }
+  },
+  {
+    pattern: /\b(?:helped\s+(?:to\s+|with\s+)?|assisted\s+(?:in\s+|with\s+)?)\b/i,
+    label: 'helped / assisted',
+    category: 'weak_ownership',
+    suggestions: {
+      leadership: ['Co-led', 'Mobilized', 'Facilitated', 'Partnered with'],
+      technical: ['Co-engineered', 'Implemented', 'Deployed', 'Constructed'],
+      optimization: ['Accelerated', 'Enabled', 'Catalyzed']
+    }
+  },
+  {
+    pattern: /\bworked\s+(?:on|with)\b/i,
+    label: 'worked on / with',
+    category: 'vague_contribution',
+    suggestions: {
+      leadership: ['Spearheaded', 'Championed', 'Drove'],
+      technical: ['Engineered', 'Overhauled', 'Developed', 'Constructed'],
+      optimization: ['Refactored', 'Optimized', 'Scaled']
+    }
+  },
+  {
+    pattern: /\b(?:participated\s+in|was\s+involved\s+in)\b/i,
+    label: 'participated in / involved in',
+    category: 'vague_contribution',
+    suggestions: {
+      leadership: ['Collaborated on', 'Co-authored', 'Executed'],
+      technical: ['Delivered', 'Contributed code to', 'Implemented'],
+      optimization: ['Audited', 'Benchmarked', 'Validated']
+    }
+  },
+  {
+    pattern: /\b(?:tasked\s+with|duties\s+included)\b/i,
+    label: 'tasked with / duties included',
+    category: 'passive_verb',
+    suggestions: {
+      leadership: ['Commissioned to', 'Appointed to lead', 'Directed'],
+      technical: ['Executed', 'Designed', 'Delivered'],
+      optimization: ['Pioneered', 'Spearheaded']
+    }
+  },
+  {
+    pattern: /\b(?:handled|did)\b/i,
+    label: 'handled / did',
+    category: 'vague_contribution',
+    suggestions: {
+      leadership: ['Managed', 'Navigated', 'Stabilized'],
+      technical: ['Resolved', 'Engineered', 'Configured'],
+      optimization: ['Streamlined', 'Troubleshot', 'Tuned']
+    }
+  },
+  {
+    pattern: /\b(?:was\s+assigned\s+to|was\s+chosen\s+to)\b/i,
+    label: 'was assigned to',
+    category: 'passive_verb',
+    suggestions: {
+      leadership: ['Selected to spearhead', 'Commissioned to direct'],
+      technical: ['Constructed', 'Formulated', 'Programmed'],
+      optimization: ['Overhauled', 'Modernized']
+    }
+  }
+];
+
+export function runResumeImpactScorer(text: string): ResumeImpactScoreResult {
+  const rawLines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  
+  // Extract bullet points or lines that represent experience statements
+  const bulletLines = rawLines.filter(line => {
+    const isBulletPrefix = line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.startsWith('–');
+    const isExperienceLine = !line.match(/^(education|skills|summary|projects|certifications|experience|profile)/i) &&
+      !line.includes('@') &&
+      !line.includes('linkedin.com') &&
+      !line.includes('github.com') &&
+      line.length > 25 &&
+      line.split(/\s+/).length >= 5;
+    return isBulletPrefix || isExperienceLine;
+  });
+
+  const bullets: BulletImpactItem[] = [];
+  const allDetectedPassive: Set<string> = new Set();
+  const allDetectedPower: Set<string> = new Set();
+
+  let highCount = 0;
+  let modCount = 0;
+  let passiveCount = 0;
+
+  bulletLines.forEach((line, idx) => {
+    const cleanLine = line.replace(/^[-•*–]\s*/, '').trim();
+    const words = cleanLine.split(/\s+/);
+    const firstWord = words[0]?.replace(/[^a-zA-Z]/g, '') || '';
+
+    // Check passive patterns
+    const foundPassives: string[] = [];
+    let matchedPatternItem = null;
+
+    for (const p of PASSIVE_PATTERNS) {
+      if (p.pattern.test(cleanLine)) {
+        foundPassives.push(p.label);
+        allDetectedPassive.add(p.label);
+        if (!matchedPatternItem) matchedPatternItem = p;
+      }
+    }
+
+    // Determine impact level
+    let impactLevel: BulletImpactItem['impactLevel'] = 'moderate';
+    let suggestedActionVerbs: BulletImpactItem['suggestedActionVerbs'] = [];
+    let recommendedRewrite = cleanLine;
+
+    // Check if starts with a recognized power verb
+    const startsWithPowerVerb = POWER_VERBS.some(pv => pv.toLowerCase() === firstWord.toLowerCase());
+    if (startsWithPowerVerb) {
+      allDetectedPower.add(firstWord);
+    }
+
+    if (foundPassives.length > 0) {
+      impactLevel = 'passive';
+      passiveCount++;
+
+      // Pick contextual verb replacement
+      const defaultSuggestions = matchedPatternItem?.suggestions || {
+        leadership: ['Spearheaded', 'Directed', 'Orchestrated'],
+        technical: ['Architected', 'Engineered', 'Overhauled'],
+        optimization: ['Streamlined', 'Accelerated', 'Optimized']
+      };
+
+      suggestedActionVerbs = [
+        { category: 'Technical & Systems', verbs: defaultSuggestions.technical },
+        { category: 'Leadership & Ownership', verbs: defaultSuggestions.leadership },
+        { category: 'Optimization & Speed', verbs: defaultSuggestions.optimization }
+      ];
+
+      // Formulate rewrite
+      if (matchedPatternItem) {
+        const bestVerb = defaultSuggestions.technical[0] || defaultSuggestions.leadership[0];
+        recommendedRewrite = cleanLine.replace(matchedPatternItem.pattern, bestVerb);
+        recommendedRewrite = recommendedRewrite.charAt(0).toUpperCase() + recommendedRewrite.slice(1);
+      }
+    } else if (startsWithPowerVerb) {
+      impactLevel = 'high';
+      highCount++;
+    } else {
+      impactLevel = 'moderate';
+      modCount++;
+      suggestedActionVerbs = [
+        { category: 'High-Impact Upgrades', verbs: ['Architected', 'Spearheaded', 'Orchestrated', 'Streamlined'] }
+      ];
+      recommendedRewrite = cleanLine.replace(new RegExp(`^${firstWord}`, 'i'), 'Spearheaded');
+    }
+
+    bullets.push({
+      id: `bullet-${idx}`,
+      originalText: cleanLine,
+      impactLevel,
+      leadVerb: firstWord || null,
+      detectedPassivePhrases: foundPassives,
+      suggestedActionVerbs,
+      recommendedRewrite
+    });
+  });
+
+  const totalBullets = bullets.length || 1;
+  const highImpactPct = Math.round((highCount / totalBullets) * 100);
+  const moderateImpactPct = Math.round((modCount / totalBullets) * 100);
+  const passiveImpactPct = Math.round((passiveCount / totalBullets) * 100);
+
+  // Overall Impact Score: High = 100pts, Moderate = 65pts, Passive = 15pts
+  let overallScore = Math.round((highCount * 100 + modCount * 65 + passiveCount * 15) / totalBullets);
+  overallScore = Math.max(15, Math.min(100, overallScore));
+
+  let impactRating: ResumeImpactScoreResult['impactRating'] = 'Passive / Needs Action';
+  let summaryTip = 'Multiple passive phrases detected. Upgrade bullet points with action verbs to trigger recruiter interest.';
+
+  if (overallScore >= 85) {
+    impactRating = 'Elite Executive Impact';
+    summaryTip = 'Superb active phrasing! Your bullets demonstrate decisive ownership and engineering leadership.';
+  } else if (overallScore >= 70) {
+    impactRating = 'Strong Active Impact';
+    summaryTip = 'Strong active voice across most bullets. Upgrading remaining passive phrases will put you in the top 5% of applicants.';
+  } else if (overallScore >= 55) {
+    impactRating = 'Moderate Impact';
+    summaryTip = 'Moderate impact. Several bullets rely on passive phrasing ("responsible for", "helped"). Upgrade them to high-impact verbs.';
+  }
+
+  return {
+    overallImpactScore: overallScore,
+    impactRating,
+    totalBullets: bullets.length,
+    highImpactCount: highCount,
+    moderateImpactCount: modCount,
+    passiveImpactCount: passiveCount,
+    highImpactPct,
+    moderateImpactPct,
+    passiveImpactPct,
+    bullets,
+    passivePhrasesDetected: Array.from(allDetectedPassive),
+    powerVerbsDetected: Array.from(allDetectedPower),
+    summaryTip
   };
 }
 

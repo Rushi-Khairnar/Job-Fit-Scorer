@@ -47,7 +47,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { JOB_DIRECTORY_DATA } from './jobsData';
-import { getRoleRoadmapProgress } from './roadmapUtils';
+import { getRoleRoadmapProgress, getEnrichedRoadmapForRole } from './roadmapUtils';
 import { UnifiedModelGapCard } from './components/UnifiedModelGapCard';
 import { QuizSection } from './components/QuizSection';
 import { RoadmapSection } from './components/RoadmapSection';
@@ -937,68 +937,133 @@ export default function App() {
               </div>
 
               {/* Quick-Resume Enrolled Roadmap Banner */}
+              {/* Quick-Resume Enrolled Roadmap Banner */}
               {currentProfile.enrolledRoadmapRole && (
-                <div className="max-w-3xl mx-auto p-5 rounded-3xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center space-x-2">
-                      <BookmarkCheck className="w-4 h-4 text-blue-200" />
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-100">
-                        Continue Your Enrolled Learning Path
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black tracking-tight">
-                        {currentProfile.enrolledRoadmapRole} Roadmap
-                      </h3>
-                      <p className="text-xs text-blue-100/90 mt-0.5">
-                        Keep moving towards your target career. Track milestones and practice role skills.
-                      </p>
-                    </div>
+                <div className="max-w-3xl mx-auto p-6 sm:p-7 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 shadow-xs space-y-5">
+                  {(() => {
+                    const progress = getRoleRoadmapProgress(
+                      currentProfile.enrolledRoadmapRole!,
+                      currentProfile.completedRoadmapMilestones
+                    );
+                    const { allMilestones } = getEnrichedRoadmapForRole(currentProfile.enrolledRoadmapRole!);
 
-                    {/* Progress Bar & Next Milestone */}
-                    {(() => {
-                      const progress = getRoleRoadmapProgress(
-                        currentProfile.enrolledRoadmapRole!,
-                        currentProfile.completedRoadmapMilestones
-                      );
-
-                      return (
-                        <div className="space-y-2 pt-1 max-w-lg">
-                          <div className="flex items-center justify-between text-xs text-blue-100 font-semibold">
-                            <span>{progress.completedCount} of {progress.totalCount} Milestones Completed</span>
-                            <span className="font-extrabold text-white">{progress.percent}%</span>
-                          </div>
-                          <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
-                            <div 
-                              className="bg-white h-full rounded-full transition-all duration-300" 
-                              style={{ width: `${progress.percent}%` }} 
-                            />
+                    return (
+                      <>
+                        {/* Header & Action Button */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                              <BookmarkCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                              <span>Enrolled Learning Track</span>
+                              <span aria-hidden="true">·</span>
+                              <span className="font-mono tabular-nums text-neutral-400">
+                                {progress.completedCount}/{progress.totalCount} Milestones
+                              </span>
+                            </div>
+                            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                              {currentProfile.enrolledRoadmapRole} Career Track
+                            </h2>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                              Targeted industry milestones to bridge skill gaps and master high-demand capabilities.
+                            </p>
                           </div>
 
-                          {progress.nextMilestone ? (
-                            <div className="inline-flex items-center space-x-1.5 text-xs text-blue-100 font-medium">
-                              <span className="opacity-75">Next up:</span>
-                              <strong className="text-white underline underline-offset-2">{progress.nextMilestone.title}</strong>
-                              <span className="opacity-75">({progress.nextMilestone.phaseTitle.split(':')[0]})</span>
-                            </div>
-                          ) : progress.isFullyCompleted ? (
-                            <div className="text-xs text-emerald-200 font-bold flex items-center">
-                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> All Milestones Completed! Ready for applications.
-                            </div>
-                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenRoadmap(currentProfile.enrolledRoadmapRole!)}
+                            className="px-4 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 font-semibold text-xs transition-all shadow-xs flex items-center justify-center cursor-pointer shrink-0 self-start sm:self-center"
+                          >
+                            <span>Continue Track</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                          </button>
                         </div>
-                      );
-                    })()}
-                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleOpenRoadmap(currentProfile.enrolledRoadmapRole!)}
-                    className="px-5 py-3 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs flex items-center justify-center transition-all shadow-sm cursor-pointer shrink-0 self-start sm:self-center"
-                  >
-                    <span>Continue Learning</span>
-                    <ArrowRight className="w-4 h-4 ml-1.5" />
-                  </button>
+                        {/* Refined Minimal Progress Visual with Subtle Dashed-Line Indicator */}
+                        <div className="space-y-3 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
+                          {/* Top Metric Row */}
+                          <div className="flex items-baseline justify-between text-xs">
+                            <span className="font-medium text-neutral-500 dark:text-neutral-400">
+                              Curriculum Progression
+                            </span>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="font-mono tabular-nums font-bold text-base text-neutral-900 dark:text-white">
+                                {progress.percent}%
+                              </span>
+                              <span className="text-[11px] text-neutral-400">
+                                completed
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Minimal Progress Bar with Dashed Segment for Upcoming Milestones */}
+                          <div className="relative py-2">
+                            {/* Base track: subtle dashed line indicating upcoming milestones */}
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0 border-t-2 border-dashed border-neutral-200 dark:border-neutral-700" />
+
+                            {/* Completed track: crisp solid line */}
+                            <div
+                              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-neutral-900 dark:bg-white rounded-full transition-all duration-300"
+                              style={{ width: `${progress.percent}%` }}
+                            />
+
+                            {/* Milestone Nodes Along the Track */}
+                            <div className="relative flex justify-between items-center w-full">
+                              {allMilestones.map((m) => {
+                                const isCompleted = currentProfile.completedRoadmapMilestones.includes(m.key);
+                                const isCurrentNext = progress.nextMilestone?.key === m.key;
+
+                                return (
+                                  <div
+                                    key={m.key}
+                                    className="relative flex flex-col items-center group cursor-pointer"
+                                    onClick={() => handleOpenRoadmap(currentProfile.enrolledRoadmapRole!)}
+                                    title={`${m.title} (${isCompleted ? 'Completed' : isCurrentNext ? 'Next up' : 'Upcoming'})`}
+                                  >
+                                    {isCompleted ? (
+                                      <div className="w-2.5 h-2.5 rounded-full bg-neutral-900 dark:bg-white ring-4 ring-white dark:ring-neutral-900 transition-transform group-hover:scale-125" />
+                                    ) : isCurrentNext ? (
+                                      <div className="relative">
+                                        <div className="w-3.5 h-3.5 rounded-full border-2 border-neutral-900 dark:border-white bg-white dark:bg-neutral-900 ring-4 ring-white dark:ring-neutral-900 transition-transform group-hover:scale-125" />
+                                        <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping" />
+                                      </div>
+                                    ) : (
+                                      <div className="w-2 h-2 rounded-full bg-neutral-300 dark:bg-neutral-600 ring-2 ring-white dark:ring-neutral-900 transition-transform group-hover:scale-125" />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Bottom Contextual Status Callout */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs pt-1">
+                            {progress.nextMilestone ? (
+                              <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-300">
+                                <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-semibold">
+                                  Next Milestone:
+                                </span>
+                                <strong className="font-semibold text-neutral-900 dark:text-white">
+                                  {progress.nextMilestone.title}
+                                </strong>
+                                <span className="text-neutral-400 dark:text-neutral-500 text-[11px]">
+                                  ({progress.nextMilestone.phaseTitle.split(':')[0]})
+                                </span>
+                              </div>
+                            ) : progress.isFullyCompleted ? (
+                              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center">
+                                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                                <span>All curriculum milestones completed. You are recruiter-ready!</span>
+                              </div>
+                            ) : null}
+
+                            <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500 shrink-0">
+                              {progress.totalCount - progress.completedCount} milestone{progress.totalCount - progress.completedCount === 1 ? '' : 's'} remaining
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 

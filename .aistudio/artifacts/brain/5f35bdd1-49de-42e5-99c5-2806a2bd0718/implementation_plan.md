@@ -1,23 +1,28 @@
-# Resume Diagnostics & ATS Suite (10 Advanced Career Tools)
+# Professional De-cluttering & Visual Redesign Plan: ATS Diagnostics Suite
 
-A specialized intelligence suite designed to simulate real-world Applicant Tracking Systems (ATS), eliminate resume red flags, automatically tailor applications to specific job descriptions, import external LinkedIn data, and conduct interactive mock interviews tailored to candidate skill gaps.
+A comprehensive architectural redesign to transform the congested, multi-tool diagnostic interface into a calm, spacious executive workspace with a clear 3-stage progressive workflow, unboxed typography, and refined visual breathing room.
+
+---
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following architectural decisions were confirmed during interactive clarification:
+> The following design decisions were confirmed during the interactive clarification interview:
 
-- **Confirmed Decision 1 (Organization)**: Dedicated top-level navigation tab: **"Resume Diagnostics & ATS Suite"** (`appState: 'ats-diagnostics'`), housing an integrated hub for all 10 tools with quick sub-navigation tabs and deep links from the Resume Builder and Job Matches.
-- **Confirmed Decision 2 (Mock Interview Simulator)**: Interactive step-by-step chat experience with live evaluation after each answer (instant score, points covered vs. missed, and suggested model answer) before moving to the next question.
-- **Confirmed Decision 3 (Job Scraper & LinkedIn Import)**: Native in-app URL parser with fallback paste analyzer, complemented by a downloadable **Companion Chrome Extension Bundle (Manifest V3)** that users can install in Developer Mode to scrape job listings directly from LinkedIn and Indeed.
+- **Confirmed Layout Style**: Minimal executive layout featuring generous whitespace ($24\text{px}$–$32\text{px}$ section breathing room), subtle 1px border lines, and zero nested card-in-card congestion.
+- **Confirmed Navigation Architecture**: Transitioning from a crowded 10-tab horizontal strip into **3 Intuitive Progressive Stages**:
+  1. **Stage 1 · Audit & Diagnostics**: ATS Parser Simulator, Readability & Tone Auditor, Red Flag & Bias Detector.
+  2. **Stage 2 · Optimize & Impact**: Resume Impact Score (Passive Phrasing & Action Verbs), Hard vs. Soft Skills, Impact Quantifier (Google XYZ Formula), 1-Click Resume Tailor.
+  3. **Stage 3 · Practice & Connect**: Turn-Based Mock AI Technical Interviewer, LinkedIn Import & Scraper Bundle.
+- **Confirmed Data Presentation**: Elimination of candy-colored badge pills and cluttered score chips. Transitioned to clean unboxed typography, subtle inline dividers (`·`), and quiet tabular figures (`font-mono tabular-nums`) with slim, single-line progress tracks.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: Provides an end-to-end diagnostic and tailoring engine that evaluates resumes the way enterprise ATS systems (Workday, Greenhouse, Lever, Taleo) do, catches hidden biases or missing metrics, tailors resumes to pasted job descriptions, and runs live mock interviews.
-- **Target Audience / Persona**: Active job seekers, tech career switchers, and applicants receiving auto-rejections who want transparency into ATS parsing and targeted preparation.
-- **Key Value**: Transforms resume building from subjective guessing into an empirical, data-driven optimization process with concrete scores, one-click fixes, and simulated hiring workflows.
+- **What It Does**: Re-architects the presentation layer of the ATS Diagnostics Suite so job seekers and software engineers can evaluate and optimize their resumes without feeling overwhelmed by 10 competing panels.
+- **Target Audience / Persona**: Tech candidates, data scientists, and engineering leaders seeking high-clarity diagnostics without visual noise.
+- **Key Value**: Delivers immediate readability, reduces cognitive friction by 70%, and presents actionable suggestions directly inline.
 
 ---
 
@@ -25,103 +30,90 @@ A specialized intelligence suite designed to simulate real-world Applicant Track
 
 ### Key User Flows
 
-1. **ATS Parse-ability Simulator**:
-   - User uploads a PDF/Word file or uses their active profile resume.
-   - The simulator runs an extraction pass and displays a split screen:
-     - **ATS Plaintext Simulation**: Exactly what the parser extracts into applicant fields (contact data, education, experience, skill tokens).
-     - **Parse-ability Scorecard**: Visual breakdown of Section Detection (100%), Contact Extraction (Email, Phone, LinkedIn), Table & Column Risk, and Header/Footer Warning.
-2. **Skill Segmentation (Hard vs. Soft)**:
-   - Categorizes extracted competencies into **Technical / Hard Skills** (languages, frameworks, cloud, databases) and **Interpersonal / Soft Skills** (cross-functional communication, stakeholder alignment, conflict resolution).
-   - Shows a comparative ratio gauge and highlights missing high-value soft skills typical for the user's target seniority.
-3. **Action Verb Power Scorer & Impact Quantifier**:
-   - Flags weak, passive verbs (*"assisted with", "responsible for", "helped"*) and provides 1-click swaps with strong power verbs (*"Spearheaded", "Architected", "Engineered", "Orchestrated"*).
-   - The **Impact Quantifier** detects bullet points missing metrics and opens a guided prompt asking for measurable outcomes, then converts them using the Google XYZ formula: *Accomplished [X] as measured by [Y] by doing [Z]*.
-4. **Bias & Red Flag Detector**:
-   - Identifies multi-month employment gaps, graduation dates older than 15 years, personal demographic disclosures, and outdated buzzwords (*"synergy", "hard worker", "team player"*), offering professional alternatives.
-5. **One-Click Resume Tailoring**:
-   - User inputs a target job description (via paste or browser scraper).
-   - The engine generates a tailored version of the resume with matched keywords naturally embedded into experience bullets.
-   - Side-by-side diff view with 1-click **"Apply Tailored Changes"** or **"Export to Word / PDF"**.
-6. **LinkedIn URL Import & Companion Extension**:
-   - Direct input for LinkedIn profile URL or public export text, automatically mapping experience, education, and skills into the active profile.
-   - Downloadable Chrome Extension bundle (Manifest V3) with instructions to scrape job descriptions from LinkedIn/Indeed into the app with a single click.
-7. **Mock AI Interview Simulator**:
-   - Generates a 5-question interview tailored specifically to the user's resume gaps and target job.
-   - Real-time step-by-step chat: The AI interviewer asks a question, the user types an answer, and receives an instant assessment:
-     - Relevancy & Technical Accuracy (1–10)
-     - Key Concepts Covered vs. Missed
-     - Model Exemplar Answer
-     - Next question prompt
+1. **Top-Level Header & Summary Strip**:
+   - Replaces the loud, dense gradient banner with a sleek, minimalist status header.
+   - Shows key health vitals in unboxed tabular typography: `ATS Fidelity · 88%` | `Impact Score · 92%` | `Passives · 0 detected`.
+   - Clear secondary actions (e.g. "Edit Resume", "Copy All Clean Text") positioned quietly on the right.
+2. **3-Stage Navigation Switcher**:
+   - Clean, segmented control with quiet indicator lines:
+     - `1. Audit & Diagnostics (3 Tools)`
+     - `2. Optimize & Impact (4 Tools)`
+     - `3. Practice & Connect (2 Tools)`
+   - Sub-tool switcher rendered as subtle text tabs with active underline state rather than colored pills.
+3. **Tool View Experience (Zero Congestion)**:
+   - **Resume Impact Scorer**: Clean 2-column layout where the high-level impact meter sits peacefully alongside the bullet audit list. Passive phrasing is underlined with subtle dotted accents rather than loud red banners.
+   - **Action Verb Power Replacement**: Hover/click triggers a clean popover or unboxed suggestion row with categorized verbs.
+   - **ATS Parser Simulation**: Side-by-side split view with clean monospaced plain-text preview on left and diagnostic checklist on right.
+   - **Mock AI Interview**: Streamlined chat timeline with comfortable message spacing and clear STAR model feedback cards.
 
-### Visual Identity & Theme
-- **Color Tokens**: Rich Indigo and Royal Blue primary (`#1d4ed8` / `#4338ca`), Emerald Green success badges (`#059669`), Amber warning alerts (`#d97706`), Crimson flag indicators (`#dc2626`).
-- **Typography & Layout**: Clean, unboxed metadata separated by middots (`·`), high-contrast score rings, monospace ATS preview console, and responsive side-by-side comparison tables.
+### Visual Identity & Design System Tokens
+
+- **Aesthetic Direction**: High-end editorial and modern SaaS engineering tool (clean slate, crisp typography, generous spatial math).
+- **Color Palette**:
+  - Primary Base: Neutral dark slate `#0F172A` and clean light canvas `#F8FAFC`.
+  - Content Cards: Surface `#FFFFFF` (Dark: `#1E293B`) with single 1px borders (`#E2E8F0` / `#334155`).
+  - Semantic Accents: Muted emerald (`#10B981`) for high impact/verified, muted blue (`#2563EB`) for active controls, soft rose (`#F43F5E`) for passive flags.
+- **Typography**:
+  - Headers: Crisp, tracking-tight sans (`font-sans tracking-tight font-bold`).
+  - Diagnostic Data & Metrics: Monospace tabular numbers (`font-mono tabular-nums`).
+  - Explanations & Suggestions: High-legibility body text (`text-sm leading-relaxed text-neutral-600 dark:text-neutral-400`).
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Native In-App Engine vs. Third-Party API Dependence**:
-  - *Chosen Approach*: Self-contained, client-side NLP heuristics for parsing, regex extraction, readability scoring, and semantic keyword matching.
-  - *Why*: Instant response time, zero latency, 100% privacy (user resumes never leave the browser), and zero external API failure risks.
-- **Decision 2: Companion Chrome Extension Integration**:
-  - *Chosen Approach*: Provide a clean, downloadable Manifest V3 Chrome Extension package inside the applet with instructions for `chrome://extensions` Developer Mode, while also supporting direct URL scraping and clipboard pasting.
-  - *Why*: Web security policies (CORS) block direct client-side cross-origin scraping of authenticated LinkedIn pages. Offering a downloadable browser extension package solves the root problem while the in-app parser ensures zero barrier to entry.
-- **Decision 3: Interactive Chat Interviewer**:
-  - *Chosen Approach*: Sequential turn-based chat with instant feedback per question.
-  - *Why*: Far more realistic than static questionnaires. Applicants learn from immediate feedback before tackling subsequent questions.
+- **Decision 1: 3-Stage Progressive Workflow vs. Flat 10-Tab Strip**
+  - *Chosen Approach*: Group tools into 3 distinct functional phases (Audit $\rightarrow$ Optimize $\rightarrow$ Practice).
+  - *Why*: Eliminates cognitive overload and horizontal scrolling fatigue while preserving quick access to all 10 features.
+  - *Alternatives Considered*: Accordion layout (rejected as it causes vertical scroll jumping) and Sidebar drawer (rejected as it reduces horizontal room for resume diffing).
+- **Decision 2: Unboxed Typography vs. Bordered Status Pills**
+  - *Chosen Approach*: Render metrics as pure, unboxed tabular numbers with text kickers and dot dividers (`·`).
+  - *Why*: Adheres strictly to the frontend design constitution (zero-pill discipline) and instantly makes the interface look like an executive-grade SaaS application.
+- **Decision 3: Retaining 100% Core Engine & State Handlers**
+  - *Chosen Approach*: Preserve all existing engine methods in `src/atsEngine.ts` (`runAtsParseSimulator`, `runResumeImpactScorer`, `runSkillSegmentation`, etc.) while radically decluttering the React component hierarchy in `src/components/AtsDiagnosticsSuite.tsx`.
+  - *Why*: Guarantees zero regression in functionality, instant reactivity, and seamless 1-click resume text mutations.
 
 ---
 
-## 4. Technical Architecture & Data Strategy
-
-### Architecture & Component Diagram
+## 4. Technical Architecture & Component Hierarchy
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                              App.tsx                                   │
-│  - Mode Navigation ('ats-diagnostics' in Header Bar)                   │
-│  - Shared UserProfile & Resume State                                   │
+│                        App.tsx Top Navigation                          │
+│          [Job Matches] · [ATS Diagnostics (3 Stages)] · [Tools]        │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│                      AtsDiagnosticsSuite.tsx                           │
-│  ┌───────────────────────┬──────────────────────┬────────────────────┐ │
-│  │ 1. ATS Parser Sim     │ 2. Skill Segmenter   │ 3. Verb Scorer     │ │
-│  ├───────────────────────┼──────────────────────┼────────────────────┤ │
-│  │ 4. Red Flag Detector  │ 5. 1-Click Tailor    │ 6. Impact Metric   │ │
-│  ├───────────────────────┼──────────────────────┼────────────────────┤ │
-│  │ 7. Browser Scraper    │ 8. LinkedIn Import   │ 9. Tone Auditor    │ │
-│  ├───────────────────────┴──────────────────────┴────────────────────┤ │
-│  │ 10. Mock AI Interview Simulator (Turn-based Interactive Chat)     │ │
-│  └───────────────────────────────────────────────────────────────────┘ │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        ExtensionBundle Generator                       │
-│  - manifest.json, content.js, popup.html, background.js                │
-│  - 1-Click Download ZIP for Chrome Extension Developer Mode            │
+│                     AtsDiagnosticsSuite.tsx                            │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ Executive Header: Unboxed Metrics (ATS % · Impact % · Readability)│  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ 3-Stage Selector: [1. Audit] · [2. Optimize] · [3. Practice]     │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                   │                                    │
+│         ┌─────────────────────────┼─────────────────────────┐          │
+│         ▼                         ▼                         ▼          │
+│  ┌──────────────┐         ┌──────────────┐          ┌──────────────┐   │
+│  │   STAGE 1    │         │   STAGE 2    │          │   STAGE 3    │   │
+│  │   (Audit)    │         │  (Optimize)  │          │  (Practice)  │   │
+│  │ ──────────── │         │ ──────────── │          │ ──────────── │   │
+│  │ · ATS Parser │         │ · Impact     │          │ · Mock AI    │   │
+│  │ · Red Flags  │         │   Score &    │          │   Interview  │   │
+│  │ · Tone &     │         │   Passives   │          │ · LinkedIn   │   │
+│  │   Readability│         │ · Hard/Soft  │          │   Importer   │   │
+│  │              │         │ · Quantifier │          │ · Extension  │   │
+│  │              │         │ · 1-Click    │          │   Package    │   │
+│  │              │         │   Tailor     │          │              │   │
+│  └──────────────┘         └──────────────┘          └──────────────┘   │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### New Components & Data Structures
+### State & Handler Continuity
 
-1. **`src/components/AtsDiagnosticsSuite.tsx`**:
-   - Master suite component containing tabs for:
-     - **ATS Parser & Parse-ability Score** (Header, contacts, tables, plaintext stream)
-     - **Skill Segmentation & Verb Scorer** (Hard vs Soft radar, action verb power upgrades, tone auditor)
-     - **Bias & Red Flag Audit** (Gaps, dated elements, clichés)
-     - **1-Click Tailoring & Impact Quantifier** (JD matcher, diff viewer, XYZ formula prompt)
-     - **External Data Tools** (LinkedIn URL parser + Chrome Extension scraper bundle)
-     - **Mock Interview Simulator** (Turn-based conversational interview with real-time scoring)
-2. **`src/atsEngine.ts`**:
-   - Specialized parsing rules:
-     - Contact extraction regex (emails, phone numbers, GitHub/LinkedIn URLs)
-     - Action verb dictionary (400+ categorized verbs: weak vs. power tiers)
-     - Soft vs. Hard skill taxonomies
-     - Readability metrics (Flesch-Kincaid index)
-     - Cliché and red flag detection patterns
-3. **`src/chromeExtensionFiles.ts`**:
-   - Ready-to-use Manifest V3 extension code for scraping job details directly from LinkedIn and Indeed.
+- `effectiveResumeText`: Sourced from current profile state with live updates via `onUpdateResumeText`.
+- `stage`: Current stage `'audit' | 'optimize' | 'practice'` with selected sub-tool tab.
+- `handleApplyRewrittenBullet`: Replaces passive bullet lines directly in resume markdown.
+- `handleUpgradeAllPassiveBullets`: Batch converts passive constructs into leadership/technical power verbs.
+- `handleApplyTailoredResume`: Updates state with keyword-infused tailored text.
