@@ -13,8 +13,11 @@ import {
   Plus,
   RefreshCw,
   Sparkles,
-  Eye
+  Eye,
+  ArrowRight,
+  BookmarkCheck
 } from 'lucide-react';
+import { getRoleRoadmapProgress } from '../roadmapUtils';
 
 export interface UserProfile {
   id: string;
@@ -26,6 +29,8 @@ export interface UserProfile {
   resumeText?: string;
   savedSkills: Array<{ name: string; level: 'Beginner' | 'Intermediate' | 'Advanced' }>;
   completedRoadmapMilestones: string[]; // e.g. "Data Scientist-1"
+  enrolledRoadmapRole?: string;        // Active enrolled learning path (e.g. "Data Scientist")
+  enrolledRoadmapDate?: string;        // e.g. "2026-10-01"
   quizScores: Array<{ quizId: string; title: string; score: number; total: number; date: string }>;
 }
 
@@ -40,6 +45,7 @@ interface AccountModalProps {
   onDeleteProfile: (profileId: string) => void;
   onUploadNewResume: (file: File) => void;
   onViewResume?: () => void;
+  onContinueRoadmap?: (role: string) => void;
 }
 
 export const AccountModal: React.FC<AccountModalProps> = ({
@@ -52,7 +58,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onCreateProfile,
   onDeleteProfile,
   onUploadNewResume,
-  onViewResume
+  onViewResume,
+  onContinueRoadmap
 }) => {
   const [name, setName] = useState(currentProfile.name);
   const [email, setEmail] = useState(currentProfile.email);
@@ -262,6 +269,136 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               />
             </label>
           </div>
+        </div>
+
+        {/* Active Learning Path Progress Tracker */}
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <BookmarkCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                Active Learning Path
+              </span>
+            </div>
+            {currentProfile.enrolledRoadmapRole ? (
+              <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2.5 py-0.5 rounded-full">
+                Enrolled {currentProfile.enrolledRoadmapDate ? `· ${currentProfile.enrolledRoadmapDate}` : ''}
+              </span>
+            ) : (
+              <span className="text-[11px] font-medium text-neutral-500">
+                Not Enrolled
+              </span>
+            )}
+          </div>
+
+          {currentProfile.enrolledRoadmapRole ? (
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-sm font-extrabold text-neutral-900 dark:text-white">
+                    {currentProfile.enrolledRoadmapRole} Roadmap
+                  </h4>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                    Track your step-by-step milestone progress towards this target career.
+                  </p>
+                </div>
+                {onContinueRoadmap && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onContinueRoadmap(currentProfile.enrolledRoadmapRole!);
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center transition-all cursor-pointer shadow-xs shrink-0 self-start sm:self-auto"
+                  >
+                    <span>Continue Path</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </button>
+                )}
+              </div>
+
+              {/* Progress Bar & Next Upcoming Step */}
+              <div>
+                {(() => {
+                  const progress = getRoleRoadmapProgress(
+                    currentProfile.enrolledRoadmapRole!,
+                    currentProfile.completedRoadmapMilestones
+                  );
+
+                  return (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span className="text-neutral-600 dark:text-neutral-300">
+                          {progress.completedCount} of {progress.totalCount} Milestones Completed
+                        </span>
+                        <span className="font-extrabold text-blue-700 dark:text-blue-300">
+                          {progress.percent}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-blue-200/60 dark:bg-blue-900/60 h-2.5 rounded-full overflow-hidden">
+                        <div 
+                          className="bg-gradient-to-r from-blue-600 to-emerald-500 h-full rounded-full transition-all duration-300"
+                          style={{ width: `${progress.percent}%` }}
+                        />
+                      </div>
+
+                      {/* Next Upcoming Step Highlight Box */}
+                      {progress.nextMilestone ? (
+                        <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800/90 border border-blue-200 dark:border-blue-800/80 shadow-2xs space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center">
+                              <Sparkles className="w-3 h-3 mr-1" /> Next Up to Learn
+                            </span>
+                            <span className="text-[10px] text-neutral-400">
+                              {progress.nextMilestone.phaseTitle.split(':')[0]}
+                            </span>
+                          </div>
+                          <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                            {progress.nextMilestone.title}
+                          </div>
+                          <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">
+                            {progress.nextMilestone.description}
+                          </p>
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {progress.nextMilestone.keySkills.map(sk => (
+                              <span key={sk} className="text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 font-medium">
+                                {sk}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : progress.isFullyCompleted ? (
+                        <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 flex items-center space-x-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <div className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
+                            Roadmap 100% Completed! You have mastered all core milestones for this role.
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between text-xs py-1">
+              <span className="text-neutral-600 dark:text-neutral-400">
+                No active learning path set. Visit Learning Roadmaps to pick a target job!
+              </span>
+              {onContinueRoadmap && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onContinueRoadmap('Data Scientist');
+                  }}
+                  className="px-3 py-1 rounded-xl text-xs font-bold bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 hover:bg-blue-50 cursor-pointer transition-colors shrink-0"
+                >
+                  Browse Roadmaps
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Stats & Progress Overview */}

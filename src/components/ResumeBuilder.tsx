@@ -39,6 +39,7 @@ interface ResumeBuilderProps {
   onBackToHome?: () => void;
   onBack?: () => void;
   backButtonLabel?: string;
+  onOpenAtsDiagnostics?: () => void;
 }
 
 interface ExperienceItem {
@@ -62,7 +63,8 @@ export const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
   initialRole = 'Data Scientist',
   onBackToHome,
   onBack,
-  backButtonLabel
+  backButtonLabel,
+  onOpenAtsDiagnostics
 }) => {
   // Personal Info
   const [fullName, setFullName] = useState('Alex Johnson');
@@ -666,6 +668,19 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
           >
             <Printer className="w-4 h-4" />
           </button>
+
+          {/* ATS Diagnostics shortcut */}
+          {onOpenAtsDiagnostics && (
+            <button
+              type="button"
+              onClick={onOpenAtsDiagnostics}
+              className="px-3 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center cursor-pointer"
+              title="Audit resume against ATS parser simulation"
+            >
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+              <span>ATS Diagnostics</span>
+            </button>
+          )}
 
           {(onBack || onBackToHome) && (
             <button

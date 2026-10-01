@@ -40,12 +40,14 @@ import {
   Building2,
   FileDown,
   Globe,
-  Eye
+  Eye,
+  BookmarkCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { JOB_DIRECTORY_DATA } from './jobsData';
+import { getRoleRoadmapProgress } from './roadmapUtils';
 import { UnifiedModelGapCard } from './components/UnifiedModelGapCard';
 import { QuizSection } from './components/QuizSection';
 import { RoadmapSection } from './components/RoadmapSection';
@@ -60,6 +62,7 @@ import { ResumeViewerModal } from './components/ResumeViewerModal';
 import { CoverLetterGenerator } from './components/CoverLetterGenerator';
 import { BulkResumeRanker } from './components/BulkResumeRanker';
 import { ApplicationTracker } from './components/ApplicationTracker';
+import { AtsDiagnosticsSuite } from './components/AtsDiagnosticsSuite';
 import { AccountModal, UserProfile } from './components/AccountModal';
 import { getSkillLevel, getSkillLevelBadgeClasses } from './skillLevels';
 
@@ -106,7 +109,8 @@ export type ActiveToolTab =
   | 'market-explorer'      // Real-Time Search-Grounded Market Explorer
   | 'cover-letter'         // Tailored Cover Letter Writer (Word & PDF)
   | 'bulk-ranker'          // Bulk Candidate Ranker
-  | 'application-tracker'; // Application Pipeline Tracker
+  | 'application-tracker'  // Application Pipeline Tracker
+  | 'ats-diagnostics';     // 10-Tool ATS Diagnostics & Simulator Suite
 
 const DEFAULT_PROFILE: UserProfile = {
   id: 'prof_default',
@@ -124,6 +128,8 @@ const DEFAULT_PROFILE: UserProfile = {
     { name: 'Git', level: 'Intermediate' }
   ],
   completedRoadmapMilestones: [],
+  enrolledRoadmapRole: 'Data Scientist',
+  enrolledRoadmapDate: 'Oct 1, 2026',
   quizScores: []
 };
 
@@ -507,6 +513,24 @@ export default function App() {
     }));
   };
 
+  // Enroll in active career roadmap
+  const handleEnrollRoadmap = (role: string) => {
+    setAllProfiles(prev => prev.map(p => {
+      if (p.id === currentProfile.id) {
+        return {
+          ...p,
+          enrolledRoadmapRole: role,
+          enrolledRoadmapDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleUpdateProfile = (partial: Partial<UserProfile>) => {
+    setAllProfiles(prev => prev.map(p => p.id === currentProfile.id ? { ...p, ...partial } : p));
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans selection:bg-blue-500/30 pb-20 transition-colors duration-200">
       {/* Account Modal */}
@@ -535,6 +559,8 @@ export default function App() {
             experienceYears: 2,
             savedSkills: [{ name: 'Python', level: 'Intermediate' }, { name: 'SQL', level: 'Beginner' }],
             completedRoadmapMilestones: [],
+            enrolledRoadmapRole: title || 'Software Engineer',
+            enrolledRoadmapDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             quizScores: []
           };
           setAllProfiles(prev => [...prev, newP]);
@@ -550,6 +576,7 @@ export default function App() {
           handleFileUpload({ target: { files: [file] } } as any);
         }}
         onViewResume={() => setIsResumeViewerOpen(true)}
+        onContinueRoadmap={(role) => handleOpenRoadmap(role)}
       />
 
       {/* Real-Time Search-Grounded Intel Modal */}
@@ -623,6 +650,20 @@ export default function App() {
               </button>
             )}
 
+            {/* Dedicated ATS & Resume Diagnostics Suite Tab */}
+            <button
+              onClick={() => setAppState('ats-diagnostics')}
+              className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center transition-all cursor-pointer ${
+                appState === 'ats-diagnostics' 
+                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800' 
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4 mr-1.5 text-blue-600 dark:text-blue-400" />
+              <span>ATS Diagnostics</span>
+              <span className="ml-1.5 px-1.5 py-0.2 text-[9px] bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded font-bold">10 Tools</span>
+            </button>
+
             {/* Single Consolidated Career Tools Dropdown */}
             <div className="relative" ref={toolsDropdownRef}>
               <button
@@ -648,6 +689,22 @@ export default function App() {
                         Assess & Analyze
                       </span>
                       <div className="space-y-0.5">
+                        <button
+                          onClick={() => { setAppState('ats-diagnostics'); setIsCareerToolsOpen(false); }}
+                          className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors cursor-pointer"
+                        >
+                          <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                            <ShieldCheck className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center">
+                              <span>ATS Diagnostics & Tailor Suite</span>
+                              <span className="ml-1.5 px-1.5 py-0.2 text-[9px] bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded font-semibold">10 In-1</span>
+                            </div>
+                            <div className="text-[11px] text-neutral-500">Parse simulator, red flags, & mock chat</div>
+                          </div>
+                        </button>
+
                         <button
                           onClick={() => { setAppState('upload'); setIsCareerToolsOpen(false); }}
                           className="w-full p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-left flex items-center space-x-3 transition-colors cursor-pointer"
@@ -878,6 +935,72 @@ export default function App() {
                   Upload your resume or pick your skills to see where you stand, practice 10-question quizzes, prepare for interviews, and build recruiter-ready resumes in Word and PDF.
                 </p>
               </div>
+
+              {/* Quick-Resume Enrolled Roadmap Banner */}
+              {currentProfile.enrolledRoadmapRole && (
+                <div className="max-w-3xl mx-auto p-5 rounded-3xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center space-x-2">
+                      <BookmarkCheck className="w-4 h-4 text-blue-200" />
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-100">
+                        Continue Your Enrolled Learning Path
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black tracking-tight">
+                        {currentProfile.enrolledRoadmapRole} Roadmap
+                      </h3>
+                      <p className="text-xs text-blue-100/90 mt-0.5">
+                        Keep moving towards your target career. Track milestones and practice role skills.
+                      </p>
+                    </div>
+
+                    {/* Progress Bar & Next Milestone */}
+                    {(() => {
+                      const progress = getRoleRoadmapProgress(
+                        currentProfile.enrolledRoadmapRole!,
+                        currentProfile.completedRoadmapMilestones
+                      );
+
+                      return (
+                        <div className="space-y-2 pt-1 max-w-lg">
+                          <div className="flex items-center justify-between text-xs text-blue-100 font-semibold">
+                            <span>{progress.completedCount} of {progress.totalCount} Milestones Completed</span>
+                            <span className="font-extrabold text-white">{progress.percent}%</span>
+                          </div>
+                          <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                            <div 
+                              className="bg-white h-full rounded-full transition-all duration-300" 
+                              style={{ width: `${progress.percent}%` }} 
+                            />
+                          </div>
+
+                          {progress.nextMilestone ? (
+                            <div className="inline-flex items-center space-x-1.5 text-xs text-blue-100 font-medium">
+                              <span className="opacity-75">Next up:</span>
+                              <strong className="text-white underline underline-offset-2">{progress.nextMilestone.title}</strong>
+                              <span className="opacity-75">({progress.nextMilestone.phaseTitle.split(':')[0]})</span>
+                            </div>
+                          ) : progress.isFullyCompleted ? (
+                            <div className="text-xs text-emerald-200 font-bold flex items-center">
+                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> All Milestones Completed! Ready for applications.
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenRoadmap(currentProfile.enrolledRoadmapRole!)}
+                    className="px-5 py-3 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs flex items-center justify-center transition-all shadow-sm cursor-pointer shrink-0 self-start sm:self-center"
+                  >
+                    <span>Continue Learning</span>
+                    <ArrowRight className="w-4 h-4 ml-1.5" />
+                  </button>
+                </div>
+              )}
 
               {/* Mode Toggle & Input Workspace */}
               <div className="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-3xl p-6 md:p-8 shadow-xs max-w-3xl mx-auto">
@@ -1420,6 +1543,8 @@ export default function App() {
                 onBackToHome={() => setAppState('upload')}
                 completedMilestones={currentProfile.completedRoadmapMilestones}
                 onToggleMilestone={handleToggleRoadmapMilestone}
+                enrolledRole={currentProfile.enrolledRoadmapRole}
+                onEnrollRole={handleEnrollRoadmap}
               />
             </motion.div>
           )}
@@ -1437,6 +1562,25 @@ export default function App() {
                 initialSkills={skillsForCV.length > 0 ? skillsForCV : extractedSkills}
                 onBack={() => setAppState(returnState)}
                 backButtonLabel={returnState === 'results' ? '← Back to Job Matches' : '← Back to Home'}
+                onOpenAtsDiagnostics={() => setAppState('ats-diagnostics')}
+              />
+            </motion.div>
+          )}
+
+          {/* ATS DIAGNOSTICS & SIMULATOR SUITE */}
+          {appState === 'ats-diagnostics' && (
+            <motion.div
+              key="ats-diagnostics"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <AtsDiagnosticsSuite
+                resumeText={currentProfile.resumeText || ''}
+                onUpdateResumeText={(newText) => {
+                  handleUpdateProfile({ resumeText: newText });
+                }}
+                targetRoleTitle={currentProfile.enrolledRoadmapRole || targetRole || 'Data Scientist'}
               />
             </motion.div>
           )}

@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan for saving and tracking target job learning roadmaps across user profiles, with an active learning path enrollment button, milestone step completion checkboxes, an interactive progress tracker in the Account Vault, and a quick-resume banner on the homepage.",
-  "updatedAt": "2026-09-30T10:43:17.722987923Z",
-  "requestFeedback": true,
-  "userFacing": true
+  "summary":  "Implementation plan for the Resume Diagnostics & ATS Suite, including 10 advanced resume intelligence and interview tools: ATS Parse-ability Tester, Soft vs. Hard Skill Segmentation, Action Verb Power Scorer, Bias & Red Flag Detector, One-Click Resume Tailoring, Impact Quantifier Prompt, In-App Job Scraper with Companion Chrome Extension bundle, LinkedIn Profile URL Import, Grammar & Tone Auditor, and Mock AI Interview Simulator.",
+  "updatedAt":  "2026-10-01T07:33:33.580434288Z",
+  "requestFeedback":  true,
+  "userFacing":  true
 }

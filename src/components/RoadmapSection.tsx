@@ -7,10 +7,12 @@ import {
   Target, 
   ExternalLink, 
   CheckSquare, 
-  Square,
-  Sparkles,
-  Award,
-  Layers
+  Square, 
+  Sparkles, 
+  Award, 
+  Layers,
+  BookmarkPlus,
+  BookmarkCheck
 } from 'lucide-react';
 import { JOB_DIRECTORY_DATA } from '../jobsData';
 import { getSkillLevel, getSkillLevelBadgeClasses } from '../skillLevels';
@@ -22,6 +24,8 @@ interface RoadmapSectionProps {
   onBackToHome?: () => void;
   completedMilestones?: string[];
   onToggleMilestone?: (milestoneKey: string) => void;
+  enrolledRole?: string;
+  onEnrollRole?: (role: string) => void;
 }
 
 export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
@@ -30,7 +34,9 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
   onBuildCV,
   onBackToHome,
   completedMilestones,
-  onToggleMilestone
+  onToggleMilestone,
+  enrolledRole,
+  onEnrollRole
 }) => {
   const [selectedRoleTitle, setSelectedRoleTitle] = useState<string>(() => {
     if (initialRole) {
@@ -210,11 +216,27 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
                 </p>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {enrolledRole === currentRole.title ? (
+                  <span className="px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-xl border border-emerald-300 dark:border-emerald-800 flex items-center shadow-2xs">
+                    <BookmarkCheck className="w-4 h-4 mr-1.5 text-emerald-600" />
+                    <span>My Active Learning Path</span>
+                  </span>
+                ) : onEnrollRole ? (
+                  <button
+                    type="button"
+                    onClick={() => onEnrollRole(currentRole.title)}
+                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center cursor-pointer"
+                  >
+                    <BookmarkPlus className="w-4 h-4 mr-1.5" />
+                    <span>Set as My Active Learning Path</span>
+                  </button>
+                ) : null}
+
                 {onTakeQuiz && (
                   <button
                     onClick={() => onTakeQuiz(currentRole.title)}
-                    className="px-3.5 py-2 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-xs font-semibold rounded-xl hover:bg-purple-100 transition-colors border border-purple-200 dark:border-purple-800"
+                    className="px-3.5 py-2 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-xs font-semibold rounded-xl hover:bg-purple-100 transition-colors border border-purple-200 dark:border-purple-800 cursor-pointer"
                   >
                     Take Role Quiz
                   </button>
@@ -222,12 +244,43 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
                 {onBuildCV && (
                   <button
                     onClick={() => onBuildCV(currentRole.title, currentRole.skills)}
-                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
+                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm cursor-pointer"
                   >
                     Build CV for Role
                   </button>
                 )}
               </div>
+            </div>
+
+            {/* Role Milestone Progress Bar */}
+            <div className="mt-5 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-700">
+              {(() => {
+                const totalM = enrichedRoadmapStages.reduce((acc, stage) => acc + stage.milestones.length, 0);
+                const doneM = enrichedRoadmapStages.reduce((acc, stage, sIdx) => {
+                  return acc + stage.milestones.filter((_, mIdx) => isStepCompleted(`${currentRole.title}-${sIdx}-${mIdx}`)).length;
+                }, 0);
+                const pct = Math.min(100, Math.round((doneM / totalM) * 100));
+
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-neutral-700 dark:text-neutral-300 flex items-center">
+                        <CheckCircle2 className="w-4 h-4 mr-1.5 text-blue-600 dark:text-blue-400" />
+                        <span>Roadmap Milestones Completed</span>
+                      </span>
+                      <span className="text-blue-700 dark:text-blue-300 font-extrabold">
+                        {doneM} of {totalM} Milestones Done ({pct}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2.5 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-blue-600 to-emerald-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Core Required Skills with Level Badges */}

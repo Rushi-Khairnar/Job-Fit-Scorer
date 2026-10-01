@@ -1,84 +1,127 @@
-# Implementation Plan: Enrolled Target Learning Roadmaps & Progress Tracking
+# Resume Diagnostics & ATS Suite (10 Advanced Career Tools)
 
-## Overview
-Enable users to select and enroll in a specific target job title's learning roadmap as their active **Learning Path** (e.g., Data Scientist, Cloud Architect, Full Stack Developer). As users mark milestones complete, their progress is permanently saved to their profile vault in `localStorage`. Progress and a quick "Continue Roadmap" shortcut are prominently displayed both in the **Account Profile Modal** and via a **Quick-Resume Banner on the Homepage**.
+A specialized intelligence suite designed to simulate real-world Applicant Tracking Systems (ATS), eliminate resume red flags, automatically tailor applications to specific job descriptions, import external LinkedIn data, and conduct interactive mock interviews tailored to candidate skill gaps.
 
----
+## User Review & Critical Decisions
 
-## 1. User Experience & Flows
+> [!IMPORTANT]
+> The following architectural decisions were confirmed during interactive clarification:
 
-### A. Enrolling in a Roadmap as an Active Learning Path
-- In **Learning Roadmaps (`RoadmapSection`)**:
-  - Add a primary action button at the top of each roadmap: **"Set as My Active Learning Path"** (or an active **"Current Learning Path"** badge with checkmark if already enrolled).
-  - Users can switch their active path at any time to explore and commit to a new career direction.
-
-### B. Milestone Checkpoint Completion
-- Milestones feature an interactive checkbox / status badge (**Completed** vs **Mark as Complete**).
-- Toggling a milestone updates the user profile's `completedRoadmapMilestones` in browser `localStorage`.
-- Visual progress bar dynamically recalculates (`X of Y milestones completed · Z%`).
-
-### C. Homepage Quick-Resume Banner
-- When a user has an active learning path enrolled, a sleek, motivating card appears above the main tools grid:
-  - Role title (e.g., *Data Scientist Roadmap*)
-  - Progress bar with percentage and milestones count
-  - Next upcoming milestone title (e.g., *Next up: Step 2 — Programming (Python, Pandas, SQL)*)
-  - **"Continue Learning Path"** button that directly opens the roadmap to the exact role and scroll position.
-
-### D. Account Profile & Vault Display
-- In **Account & Career Vault (`AccountModal`)**:
-  - Add a dedicated **"Active Learning Path & Roadmap Progress"** card.
-  - Displays enrolled role, visual gradient progress bar, milestone indicators, date enrolled, and a **"Resume Roadmap"** action.
-  - Option to switch to another role or clear the active enrollment.
+- **Confirmed Decision 1 (Organization)**: Dedicated top-level navigation tab: **"Resume Diagnostics & ATS Suite"** (`appState: 'ats-diagnostics'`), housing an integrated hub for all 10 tools with quick sub-navigation tabs and deep links from the Resume Builder and Job Matches.
+- **Confirmed Decision 2 (Mock Interview Simulator)**: Interactive step-by-step chat experience with live evaluation after each answer (instant score, points covered vs. missed, and suggested model answer) before moving to the next question.
+- **Confirmed Decision 3 (Job Scraper & LinkedIn Import)**: Native in-app URL parser with fallback paste analyzer, complemented by a downloadable **Companion Chrome Extension Bundle (Manifest V3)** that users can install in Developer Mode to scrape job listings directly from LinkedIn and Indeed.
 
 ---
 
-## 2. Technical Architecture & File Changes
+## 1. Overview & Core Concept
 
-### Data Model Updates (`src/components/AccountModal.tsx` & `src/App.tsx`)
-Update `UserProfile` interface:
-```typescript
-export interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  title: string;
-  experienceYears: number;
-  resumeFileName?: string;
-  resumeText?: string;
-  savedSkills: Array<{ name: string; level: 'Beginner' | 'Intermediate' | 'Advanced' }>;
-  enrolledRoadmapRole?: string;       // e.g. "Data Scientist"
-  enrolledRoadmapDate?: string;       // e.g. "2026-09-30"
-  completedRoadmapMilestones: string[]; // e.g. ["Data Scientist-0", "Data Scientist-1"]
-  quizScores: Array<{ quizId: string; title: string; score: number; total: number; date: string }>;
-}
+- **What It Does**: Provides an end-to-end diagnostic and tailoring engine that evaluates resumes the way enterprise ATS systems (Workday, Greenhouse, Lever, Taleo) do, catches hidden biases or missing metrics, tailors resumes to pasted job descriptions, and runs live mock interviews.
+- **Target Audience / Persona**: Active job seekers, tech career switchers, and applicants receiving auto-rejections who want transparency into ATS parsing and targeted preparation.
+- **Key Value**: Transforms resume building from subjective guessing into an empirical, data-driven optimization process with concrete scores, one-click fixes, and simulated hiring workflows.
+
+---
+
+## 2. User Experience & Visual Design
+
+### Key User Flows
+
+1. **ATS Parse-ability Simulator**:
+   - User uploads a PDF/Word file or uses their active profile resume.
+   - The simulator runs an extraction pass and displays a split screen:
+     - **ATS Plaintext Simulation**: Exactly what the parser extracts into applicant fields (contact data, education, experience, skill tokens).
+     - **Parse-ability Scorecard**: Visual breakdown of Section Detection (100%), Contact Extraction (Email, Phone, LinkedIn), Table & Column Risk, and Header/Footer Warning.
+2. **Skill Segmentation (Hard vs. Soft)**:
+   - Categorizes extracted competencies into **Technical / Hard Skills** (languages, frameworks, cloud, databases) and **Interpersonal / Soft Skills** (cross-functional communication, stakeholder alignment, conflict resolution).
+   - Shows a comparative ratio gauge and highlights missing high-value soft skills typical for the user's target seniority.
+3. **Action Verb Power Scorer & Impact Quantifier**:
+   - Flags weak, passive verbs (*"assisted with", "responsible for", "helped"*) and provides 1-click swaps with strong power verbs (*"Spearheaded", "Architected", "Engineered", "Orchestrated"*).
+   - The **Impact Quantifier** detects bullet points missing metrics and opens a guided prompt asking for measurable outcomes, then converts them using the Google XYZ formula: *Accomplished [X] as measured by [Y] by doing [Z]*.
+4. **Bias & Red Flag Detector**:
+   - Identifies multi-month employment gaps, graduation dates older than 15 years, personal demographic disclosures, and outdated buzzwords (*"synergy", "hard worker", "team player"*), offering professional alternatives.
+5. **One-Click Resume Tailoring**:
+   - User inputs a target job description (via paste or browser scraper).
+   - The engine generates a tailored version of the resume with matched keywords naturally embedded into experience bullets.
+   - Side-by-side diff view with 1-click **"Apply Tailored Changes"** or **"Export to Word / PDF"**.
+6. **LinkedIn URL Import & Companion Extension**:
+   - Direct input for LinkedIn profile URL or public export text, automatically mapping experience, education, and skills into the active profile.
+   - Downloadable Chrome Extension bundle (Manifest V3) with instructions to scrape job descriptions from LinkedIn/Indeed into the app with a single click.
+7. **Mock AI Interview Simulator**:
+   - Generates a 5-question interview tailored specifically to the user's resume gaps and target job.
+   - Real-time step-by-step chat: The AI interviewer asks a question, the user types an answer, and receives an instant assessment:
+     - Relevancy & Technical Accuracy (1–10)
+     - Key Concepts Covered vs. Missed
+     - Model Exemplar Answer
+     - Next question prompt
+
+### Visual Identity & Theme
+- **Color Tokens**: Rich Indigo and Royal Blue primary (`#1d4ed8` / `#4338ca`), Emerald Green success badges (`#059669`), Amber warning alerts (`#d97706`), Crimson flag indicators (`#dc2626`).
+- **Typography & Layout**: Clean, unboxed metadata separated by middots (`·`), high-contrast score rings, monospace ATS preview console, and responsive side-by-side comparison tables.
+
+---
+
+## 3. Key Product Decisions & Trade-Offs
+
+- **Decision 1: Native In-App Engine vs. Third-Party API Dependence**:
+  - *Chosen Approach*: Self-contained, client-side NLP heuristics for parsing, regex extraction, readability scoring, and semantic keyword matching.
+  - *Why*: Instant response time, zero latency, 100% privacy (user resumes never leave the browser), and zero external API failure risks.
+- **Decision 2: Companion Chrome Extension Integration**:
+  - *Chosen Approach*: Provide a clean, downloadable Manifest V3 Chrome Extension package inside the applet with instructions for `chrome://extensions` Developer Mode, while also supporting direct URL scraping and clipboard pasting.
+  - *Why*: Web security policies (CORS) block direct client-side cross-origin scraping of authenticated LinkedIn pages. Offering a downloadable browser extension package solves the root problem while the in-app parser ensures zero barrier to entry.
+- **Decision 3: Interactive Chat Interviewer**:
+  - *Chosen Approach*: Sequential turn-based chat with instant feedback per question.
+  - *Why*: Far more realistic than static questionnaires. Applicants learn from immediate feedback before tackling subsequent questions.
+
+---
+
+## 4. Technical Architecture & Data Strategy
+
+### Architecture & Component Diagram
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                              App.tsx                                   │
+│  - Mode Navigation ('ats-diagnostics' in Header Bar)                   │
+│  - Shared UserProfile & Resume State                                   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      AtsDiagnosticsSuite.tsx                           │
+│  ┌───────────────────────┬──────────────────────┬────────────────────┐ │
+│  │ 1. ATS Parser Sim     │ 2. Skill Segmenter   │ 3. Verb Scorer     │ │
+│  ├───────────────────────┼──────────────────────┼────────────────────┤ │
+│  │ 4. Red Flag Detector  │ 5. 1-Click Tailor    │ 6. Impact Metric   │ │
+│  ├───────────────────────┼──────────────────────┼────────────────────┤ │
+│  │ 7. Browser Scraper    │ 8. LinkedIn Import   │ 9. Tone Auditor    │ │
+│  ├───────────────────────┴──────────────────────┴────────────────────┤ │
+│  │ 10. Mock AI Interview Simulator (Turn-based Interactive Chat)     │ │
+│  └───────────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        ExtensionBundle Generator                       │
+│  - manifest.json, content.js, popup.html, background.js                │
+│  - 1-Click Download ZIP for Chrome Extension Developer Mode            │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Component Updates
+### New Components & Data Structures
 
-1. **`src/components/RoadmapSection.tsx`**:
-   - Add `enrolledRole?: string` and `onEnrollRole?: (role: string) => void` props.
-   - Render the **"Enroll as Active Learning Path"** header toggle.
-   - Ensure milestones support completion toggling and persist under `${role}-${index}` milestone keys.
-   - Show overall roadmap completion percentage banner.
-
-2. **`src/components/AccountModal.tsx`**:
-   - Render an **Active Learning Path & Roadmap Tracker** card.
-   - Calculate total milestones from `JOB_DIRECTORY_DATA` for the enrolled role.
-   - Show progress bar, next milestone prompt, and **"Resume Roadmap"** button.
-
-3. **`src/App.tsx`**:
-   - Add Homepage **Quick-Resume Roadmap Banner** shown when `currentProfile.enrolledRoadmapRole` is active.
-   - Wire `handleEnrollRoadmap(role)` to update `currentProfile.enrolledRoadmapRole` and persist to `localStorage`.
-   - Wire `handleToggleMilestone(milestoneKey)` to toggle milestone completion.
-   - Pass enrollment handlers to `RoadmapSection` and `AccountModal`.
-
----
-
-## 3. Verification & Testing Plan
-- Test enrolling in a roadmap from `RoadmapSection` (e.g. Data Scientist).
-- Verify the active badge changes to "Current Learning Path".
-- Check off Step 1 and Step 2 milestones; confirm progress updates to 66%.
-- Return to Homepage; verify the "Continue Your Learning Path" banner is displayed with 66% progress and "Step 3" as next up.
-- Open Account Profile modal; verify the Active Learning Path card reflects 66% completion and allows 1-click resumption.
-- Test profile switching: verify each profile retains its own independent enrolled roadmap and milestone completion state.
-- Run `compile_applet` and `lint_applet` to ensure zero compilation or type errors.
+1. **`src/components/AtsDiagnosticsSuite.tsx`**:
+   - Master suite component containing tabs for:
+     - **ATS Parser & Parse-ability Score** (Header, contacts, tables, plaintext stream)
+     - **Skill Segmentation & Verb Scorer** (Hard vs Soft radar, action verb power upgrades, tone auditor)
+     - **Bias & Red Flag Audit** (Gaps, dated elements, clichés)
+     - **1-Click Tailoring & Impact Quantifier** (JD matcher, diff viewer, XYZ formula prompt)
+     - **External Data Tools** (LinkedIn URL parser + Chrome Extension scraper bundle)
+     - **Mock Interview Simulator** (Turn-based conversational interview with real-time scoring)
+2. **`src/atsEngine.ts`**:
+   - Specialized parsing rules:
+     - Contact extraction regex (emails, phone numbers, GitHub/LinkedIn URLs)
+     - Action verb dictionary (400+ categorized verbs: weak vs. power tiers)
+     - Soft vs. Hard skill taxonomies
+     - Readability metrics (Flesch-Kincaid index)
+     - Cliché and red flag detection patterns
+3. **`src/chromeExtensionFiles.ts`**:
+   - Ready-to-use Manifest V3 extension code for scraping job details directly from LinkedIn and Indeed.
