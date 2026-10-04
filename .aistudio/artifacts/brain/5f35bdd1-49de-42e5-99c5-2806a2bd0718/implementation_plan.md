@@ -1,119 +1,77 @@
-# Professional De-cluttering & Visual Redesign Plan: ATS Diagnostics Suite
+# Implementation Plan: Wisdom AI Career Copilot & Platform Navigator
 
-A comprehensive architectural redesign to transform the congested, multi-tool diagnostic interface into a calm, spacious executive workspace with a clear 3-stage progressive workflow, unboxed typography, and refined visual breathing room.
-
----
-
-## User Review & Critical Decisions
-
-> [!IMPORTANT]
-> The following design decisions were confirmed during the interactive clarification interview:
-
-- **Confirmed Layout Style**: Minimal executive layout featuring generous whitespace ($24\text{px}$–$32\text{px}$ section breathing room), subtle 1px border lines, and zero nested card-in-card congestion.
-- **Confirmed Navigation Architecture**: Transitioning from a crowded 10-tab horizontal strip into **3 Intuitive Progressive Stages**:
-  1. **Stage 1 · Audit & Diagnostics**: ATS Parser Simulator, Readability & Tone Auditor, Red Flag & Bias Detector.
-  2. **Stage 2 · Optimize & Impact**: Resume Impact Score (Passive Phrasing & Action Verbs), Hard vs. Soft Skills, Impact Quantifier (Google XYZ Formula), 1-Click Resume Tailor.
-  3. **Stage 3 · Practice & Connect**: Turn-Based Mock AI Technical Interviewer, LinkedIn Import & Scraper Bundle.
-- **Confirmed Data Presentation**: Elimination of candy-colored badge pills and cluttered score chips. Transitioned to clean unboxed typography, subtle inline dividers (`·`), and quiet tabular figures (`font-mono tabular-nums`) with slim, single-line progress tracks.
+Wisdom is an executive AI career assistant and platform guide embedded within JobFit Studio. It assists candidates with personalized career advice, resume optimization tips, interview prep guidance, and intelligent 1-click navigation to relevant platform tools based on their live profile, resume, and target role.
 
 ---
 
-## 1. Overview & Core Concept
-
-- **What It Does**: Re-architects the presentation layer of the ATS Diagnostics Suite so job seekers and software engineers can evaluate and optimize their resumes without feeling overwhelmed by 10 competing panels.
-- **Target Audience / Persona**: Tech candidates, data scientists, and engineering leaders seeking high-clarity diagnostics without visual noise.
-- **Key Value**: Delivers immediate readability, reduces cognitive friction by 70%, and presents actionable suggestions directly inline.
-
----
-
-## 2. User Experience & Visual Design
-
-### Key User Flows
-
-1. **Top-Level Header & Summary Strip**:
-   - Replaces the loud, dense gradient banner with a sleek, minimalist status header.
-   - Shows key health vitals in unboxed tabular typography: `ATS Fidelity · 88%` | `Impact Score · 92%` | `Passives · 0 detected`.
-   - Clear secondary actions (e.g. "Edit Resume", "Copy All Clean Text") positioned quietly on the right.
-2. **3-Stage Navigation Switcher**:
-   - Clean, segmented control with quiet indicator lines:
-     - `1. Audit & Diagnostics (3 Tools)`
-     - `2. Optimize & Impact (4 Tools)`
-     - `3. Practice & Connect (2 Tools)`
-   - Sub-tool switcher rendered as subtle text tabs with active underline state rather than colored pills.
-3. **Tool View Experience (Zero Congestion)**:
-   - **Resume Impact Scorer**: Clean 2-column layout where the high-level impact meter sits peacefully alongside the bullet audit list. Passive phrasing is underlined with subtle dotted accents rather than loud red banners.
-   - **Action Verb Power Replacement**: Hover/click triggers a clean popover or unboxed suggestion row with categorized verbs.
-   - **ATS Parser Simulation**: Side-by-side split view with clean monospaced plain-text preview on left and diagnostic checklist on right.
-   - **Mock AI Interview**: Streamlined chat timeline with comfortable message spacing and clear STAR model feedback cards.
-
-### Visual Identity & Design System Tokens
-
-- **Aesthetic Direction**: High-end editorial and modern SaaS engineering tool (clean slate, crisp typography, generous spatial math).
-- **Color Palette**:
-  - Primary Base: Neutral dark slate `#0F172A` and clean light canvas `#F8FAFC`.
-  - Content Cards: Surface `#FFFFFF` (Dark: `#1E293B`) with single 1px borders (`#E2E8F0` / `#334155`).
-  - Semantic Accents: Muted emerald (`#10B981`) for high impact/verified, muted blue (`#2563EB`) for active controls, soft rose (`#F43F5E`) for passive flags.
-- **Typography**:
-  - Headers: Crisp, tracking-tight sans (`font-sans tracking-tight font-bold`).
-  - Diagnostic Data & Metrics: Monospace tabular numbers (`font-mono tabular-nums`).
-  - Explanations & Suggestions: High-legibility body text (`text-sm leading-relaxed text-neutral-600 dark:text-neutral-400`).
+## 1. User Choices & Clarifications
+- **Presentation & Placement**: Floating expandable bubble in the bottom-right corner on desktop, with a fluid full-width bottom sheet drawer on Android/mobile.
+- **Role & Specialization**: Executive career advisor that answers user queries with actionable advice and renders 1-click tool navigation buttons (`ats-diagnostics`, `interview-prep`, `build-cv`, `salary-estimator`, `job-directory`, `quizzes`, `account-vault`, etc.).
+- **Context Awareness**: Full candidate context injection—Wisdom inspects active candidate name, current occupation, primary target role, years of experience, uploaded resume text, saved skills, and enrolled roadmap milestones to deliver deeply personalized recommendations.
 
 ---
 
-## 3. Key Product Decisions & Trade-Offs
+## 2. Proposed Architecture & System Design
 
-- **Decision 1: 3-Stage Progressive Workflow vs. Flat 10-Tab Strip**
-  - *Chosen Approach*: Group tools into 3 distinct functional phases (Audit $\rightarrow$ Optimize $\rightarrow$ Practice).
-  - *Why*: Eliminates cognitive overload and horizontal scrolling fatigue while preserving quick access to all 10 features.
-  - *Alternatives Considered*: Accordion layout (rejected as it causes vertical scroll jumping) and Sidebar drawer (rejected as it reduces horizontal room for resume diffing).
-- **Decision 2: Unboxed Typography vs. Bordered Status Pills**
-  - *Chosen Approach*: Render metrics as pure, unboxed tabular numbers with text kickers and dot dividers (`·`).
-  - *Why*: Adheres strictly to the frontend design constitution (zero-pill discipline) and instantly makes the interface look like an executive-grade SaaS application.
-- **Decision 3: Retaining 100% Core Engine & State Handlers**
-  - *Chosen Approach*: Preserve all existing engine methods in `src/atsEngine.ts` (`runAtsParseSimulator`, `runResumeImpactScorer`, `runSkillSegmentation`, etc.) while radically decluttering the React component hierarchy in `src/components/AtsDiagnosticsSuite.tsx`.
-  - *Why*: Guarantees zero regression in functionality, instant reactivity, and seamless 1-click resume text mutations.
+### A. Backend Route: `/api/wisdom-chat` (`server.ts`)
+- Utilizes the official `@google/genai` TypeScript SDK with model `gemini-3.8-flash`.
+- Accepts:
+  - `messages`: Conversation history `[{ role: 'user' | 'assistant', content: string }]`.
+  - `candidateContext`: Active profile details (`name`, `occupation`, `targetRole`, `email`, `experienceYears`, `savedSkills`, `enrolledRoadmap`, `resumeTextSnippet`, `hasVideoCv`).
+- System prompt instructions:
+  - Identity: Wisdom, the AI Career Copilot for JobFit Studio.
+  - Structured response capability: Returns both conversational markdown guidance and an array of recommended platform action shortcuts (`actions: [{ label: string, toolId: string, description: string }]`).
+  - Fallback resilience: Graceful offline / demo fallback mode if API key is not present or offline.
+
+### B. Frontend Component: `WisdomChatbot.tsx` (`src/components/WisdomChatbot.tsx`)
+- **Floating Launcher Button**:
+  - Positioned at bottom-right (`bottom-6 right-6`), above mobile navigation bar with high-contrast executive styling (`bg-blue-600 text-white shadow-xl hover:bg-blue-700`).
+  - Pulsing micro-indicator when unread or idle, with clean spark / bot icon.
+  - Keyboard shortcut (`⌘K` or `Ctrl+K`) to toggle open/close.
+- **Desktop Chat Window**:
+  - Elegant single-elevation card ($380\text{px}$–$420\text{px}$ width, $560\text{px}$ height) with frosted backdrop blur, hairline borders, and dark mode support.
+  - Header: Wordmark "Wisdom", active candidate badge ("Context: [Candidate Name] · [Target Role]"), minimize, clear, and close buttons.
+  - Message Stream: Formatted bubble stream with markdown rendering, typography hierarchy, monospace code blocks, and inline action buttons.
+  - Action Shortcut Chips: Interactive 1-click cards below responses allowing immediate navigation to any of the 12+ career tools.
+  - Starter Prompts: Quick-click suggestions when chat starts (e.g., *"What should I do next?"*, *"Audit my resume for red flags"*, *"Help me practice STAR interviews"*, *"Compare my skills to market salaries"*).
+  - Input Box: Auto-resizing textarea with Send button and voice/enter hotkey support.
+- **Android / Mobile Touch Bottom Sheet**:
+  - Full mobile responsiveness adhering to the mobile thumb zone and touch guidelines ($\ge 44\text{px}$ touch targets, smooth spring transition, grab handle, full dismiss gesture).
+
+### C. Platform Navigation Integration (`src/App.tsx`)
+- Connect Wisdom's action buttons to `setAppState(...)` and `setIsAccountModalOpen(true)`:
+  - Jump directly to ATS Diagnostics Suite (`ats-diagnostics`)
+  - Jump directly to Role Roadmaps (`job-directory`)
+  - Jump to Interactive STAR Interview Prep (`interview-prep`)
+  - Jump to Resume Builder (`build-cv`)
+  - Jump to Salary Calculator (`salary-estimator`)
+  - Jump to Application Tracker (`application-tracker`)
+  - Open Career Vault & Video CV (`account-vault`)
+- Automatically close or dock the chat window upon navigation if on mobile, or keep open with notification.
 
 ---
 
-## 4. Technical Architecture & Component Hierarchy
+## 3. UI/UX Specifications & Design Discipline
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        App.tsx Top Navigation                          │
-│          [Job Matches] · [ATS Diagnostics (3 Stages)] · [Tools]        │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                     AtsDiagnosticsSuite.tsx                            │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │ Executive Header: Unboxed Metrics (ATS % · Impact % · Readability)│  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │ 3-Stage Selector: [1. Audit] · [2. Optimize] · [3. Practice]     │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-│                                   │                                    │
-│         ┌─────────────────────────┼─────────────────────────┐          │
-│         ▼                         ▼                         ▼          │
-│  ┌──────────────┐         ┌──────────────┐          ┌──────────────┐   │
-│  │   STAGE 1    │         │   STAGE 2    │          │   STAGE 3    │   │
-│  │   (Audit)    │         │  (Optimize)  │          │  (Practice)  │   │
-│  │ ──────────── │         │ ──────────── │          │ ──────────── │   │
-│  │ · ATS Parser │         │ · Impact     │          │ · Mock AI    │   │
-│  │ · Red Flags  │         │   Score &    │          │   Interview  │   │
-│  │ · Tone &     │         │   Passives   │          │ · LinkedIn   │   │
-│  │   Readability│         │ · Hard/Soft  │          │   Importer   │   │
-│  │              │         │ · Quantifier │          │ · Extension  │   │
-│  │              │         │ · 1-Click    │          │   Package    │   │
-│  │              │         │   Tailor     │          │              │   │
-│  └──────────────┘         └──────────────┘          └──────────────┘   │
-└────────────────────────────────────────────────────────────────────────┘
-```
+- **Anti-AI Slop & Zero-Pill Rules**:
+  - No candy pill enclosures; quiet metadata markers with `·` separators.
+  - Single-elevation card surfaces (`bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800`).
+  - 60-30-10 color balance: neutral slate canvas, clean structural containers, high-intent blue accent for send and action highlights.
+  - Monospace tabular numbers (`tabular-nums`) for any statistics or scores quoted.
+  - Responsive safe zone: Positioned $80\text{px}$ above mobile viewport bottom to avoid overlap with Android bottom navigation.
 
-### State & Handler Continuity
+---
 
-- `effectiveResumeText`: Sourced from current profile state with live updates via `onUpdateResumeText`.
-- `stage`: Current stage `'audit' | 'optimize' | 'practice'` with selected sub-tool tab.
-- `handleApplyRewrittenBullet`: Replaces passive bullet lines directly in resume markdown.
-- `handleUpgradeAllPassiveBullets`: Batch converts passive constructs into leadership/technical power verbs.
-- `handleApplyTailoredResume`: Updates state with keyword-infused tailored text.
+## 4. Verification Plan
+
+1. **Static Analysis & Linting**:
+   - Run `lint_applet` (`tsc --noEmit`) to verify zero TypeScript errors.
+2. **Build Verification**:
+   - Run `compile_applet` to verify Vite client and Express server build success.
+3. **Runtime Server Verification**:
+   - Restart dev server and verify `/api/wisdom-chat` endpoint responds to chat queries.
+4. **Interactive Feature Testing**:
+   - Test floating bubble toggle on desktop and Android mobile viewports.
+   - Verify active candidate context (Rao or Alex Johnson) is correctly read and reflected in advice.
+   - Click each 1-click action button (e.g. "Run ATS Diagnostics", "View Video CV Vault", "Practice STAR Interviews") and verify immediate navigation to the correct platform tool.
+   - Test offline / demo prompt fallback handling.

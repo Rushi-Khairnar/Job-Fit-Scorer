@@ -230,6 +230,94 @@ Return your analysis strictly as a single, valid JSON object without surrounding
   }
 });
 
+// Wisdom AI Career Copilot & Platform Navigation Chatbot Endpoint
+app.post('/api/wisdom-chat', async (req, res) => {
+  try {
+    const { messages, candidateContext } = req.body;
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'Messages array is required' });
+    }
+
+    const latestMessage = messages[messages.length - 1];
+    const userQuery = latestMessage?.content || '';
+
+    // Candidate Context summary
+    const ctx = candidateContext || {};
+    const candidateSummary = `
+- Candidate Name: ${ctx.name || 'Candidate'}
+- Current Occupation (Doing right now): ${ctx.occupation || 'Professional'}
+- Primary Target Role: ${ctx.targetRole || 'Software Professional'}
+- Years of Experience: ${ctx.experienceYears ?? 'Not specified'}
+- Known / Saved Skills: ${Array.isArray(ctx.savedSkills) ? ctx.savedSkills.join(', ') : 'None listed yet'}
+- Enrolled Learning Roadmap: ${ctx.enrolledRoadmapRole || 'None currently active'}
+- Resume Uploaded: ${ctx.resumeFileName ? `Yes (${ctx.resumeFileName})` : 'No written resume uploaded yet'}
+- Video CV Attached: ${ctx.hasVideoCv ? 'Yes, video elevator pitch attached' : 'No video CV uploaded yet'}
+${ctx.resumeTextSnippet ? `- Resume Excerpt: "${ctx.resumeTextSnippet.slice(0, 1200)}..."` : ''}
+`.trim();
+
+    const systemPrompt = `You are "Wisdom", the personal AI career advisor for JobFit Studio.
+Your purpose is to answer the candidate's career questions directly, clearly, concisely, and helpfully based on their profile, target role, and resume.
+
+CURRENT CANDIDATE CONTEXT:
+${candidateSummary}
+
+INSTRUCTIONS:
+1. Address the candidate's question directly with concise, practical advice.
+2. Structure your response with clean markdown (paragraphs, bullet points, bold key terms).
+3. Do not include raw JSON, button codes, follow-up prompt chips, or suggested actions. Keep the conversation simple, natural, and helpful.`;
+
+    // Format previous messages for context
+    const conversationHistory = messages.map(m => `${m.role === 'user' ? 'Candidate' : 'Wisdom'}: ${m.content}`).join('\n\n');
+    const fullPrompt = `${systemPrompt}\n\nCONVERSATION HISTORY:\n${conversationHistory}\n\nCandidate: "${userQuery}"\n\nWisdom:`;
+
+    let reply = '';
+
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: fullPrompt,
+        });
+
+        reply = response.text?.trim() || '';
+      } catch (geminiErr) {
+        console.error('Gemini API call failed, generating fallback response:', geminiErr);
+      }
+    }
+
+    // Fallback if API key missing or parse failed
+    if (!reply) {
+      const qLower = userQuery.toLowerCase();
+      let fallbackReply = `Hello ${ctx.name || 'there'}! I'm **Wisdom**, your AI Career Copilot.\n\n`;
+
+      if (qLower.includes('ats') || qLower.includes('resume') || qLower.includes('cv') || qLower.includes('audit')) {
+        fallbackReply += `To maximize your interview callbacks, focus on tailoring your resume to the target role of **${ctx.targetRole || 'Software Professional'}**:\n\n- Align your bullet points with quantifiable impact (metrics, performance gains, team size).\n- Use strong action verbs (e.g., *Architected*, *Engineered*, *Optimized*).\n- Ensure keywords matching core skills (${Array.isArray(ctx.savedSkills) && ctx.savedSkills.length > 0 ? ctx.savedSkills.slice(0, 4).join(', ') : 'industry standards'}) are clearly visible for ATS parsers.`;
+      } else if (qLower.includes('interview') || qLower.includes('star') || qLower.includes('prepare') || qLower.includes('question')) {
+        fallbackReply += `For interviews in **${ctx.targetRole || 'tech'}**, prepare your stories using the **STAR method** (Situation, Task, Action, Result):\n\n- **Situation**: Briefly set the context.\n- **Task**: Explain the challenge you faced.\n- **Action**: Focus on what *you* specifically did and the technologies you used.\n- **Result**: Highlight measurable business or technical outcomes.`;
+      } else if (qLower.includes('salary') || qLower.includes('pay') || qLower.includes('compensation') || qLower.includes('worth')) {
+        fallbackReply += `Compensation for **${ctx.targetRole || 'your target role'}** with ${ctx.experienceYears ?? 2} years of experience typically scales based on location and specialty. Focusing on in-demand competencies like distributed systems, cloud architecture, and modern full-stack workflows will position you in the top salary percentiles.`;
+      } else if (qLower.includes('roadmap') || qLower.includes('learn') || qLower.includes('skill') || qLower.includes('study')) {
+        fallbackReply += `For a candidate targeting **${ctx.targetRole || 'tech roles'}**, here are key areas to focus on right now:\n\n1. Deepen mastery of core fundamentals and architecture.\n2. Build hands-on projects showcasing full-lifecycle delivery.\n3. Validate your skills through assessments and technical practice.`;
+      } else if (qLower.includes('video') || qLower.includes('pitch') || qLower.includes('account') || qLower.includes('profile')) {
+        fallbackReply += `A 60-second video elevator pitch is a great way to introduce yourself. Focus on your background as a **${ctx.occupation || 'developer'}**, your passion for **${ctx.targetRole || 'engineering'}**, and the top strengths you bring to a team.`;
+      } else {
+        fallbackReply += `Based on your profile as a **${ctx.occupation || ctx.targetRole || 'Software Professional'}** aiming for **${ctx.targetRole || 'new opportunities'}**, here is a recommended path:\n\n1. Review and refine your resume against target job requirements.\n2. Strengthen high-impact skills relevant to **${ctx.targetRole || 'your domain'}**.\n3. Prepare concrete STAR project examples for technical and behavioral interviews.`;
+      }
+
+      reply = fallbackReply;
+    }
+
+    return res.json({ reply });
+  } catch (error: any) {
+    console.error('Error in /api/wisdom-chat:', error);
+    return res.status(500).json({
+      error: 'Failed to process chat message',
+      details: error.message,
+    });
+  }
+});
+
 // Mount Vite or serve static files
 async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';

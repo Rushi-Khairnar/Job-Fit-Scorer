@@ -69,6 +69,7 @@ import { BulkResumeRanker } from './components/BulkResumeRanker';
 import { ApplicationTracker } from './components/ApplicationTracker';
 import { AtsDiagnosticsSuite } from './components/AtsDiagnosticsSuite';
 import { AccountModal, UserProfile } from './components/AccountModal';
+import { WisdomChatbot } from './components/WisdomChatbot';
 import { getSkillLevel, getSkillLevelBadgeClasses } from './skillLevels';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -852,8 +853,71 @@ export default function App() {
     return () => { isMounted = false; };
   }, [currentProfile.id, currentProfile.videoCvFileName, currentProfile.videoCvUrl]);
 
+  // Navigation handler for Wisdom AI Career Copilot
+  const handleWisdomNavigate = (toolId: string) => {
+    switch (toolId) {
+      case 'ats-diagnostics':
+        setAppState('ats-diagnostics');
+        break;
+      case 'job-directory':
+      case 'roadmaps':
+        setAppState('job-directory');
+        break;
+      case 'interview-prep':
+        setAppState('interview-prep');
+        break;
+      case 'build-cv':
+        handleOpenBuildCV(targetRole, extractedSkills);
+        break;
+      case 'salary-estimator':
+        setAppState('salary-estimator');
+        break;
+      case 'market-explorer':
+        setAppState('market-explorer');
+        break;
+      case 'culture-fit':
+        setAppState('culture-fit');
+        break;
+      case 'cover-letter':
+        setAppState('cover-letter');
+        break;
+      case 'application-tracker':
+        setAppState('application-tracker');
+        break;
+      case 'quizzes':
+        setAppState('quizzes');
+        break;
+      case 'profile-auditor':
+        setAppState('profile-auditor');
+        break;
+      case 'bulk-ranker':
+        setAppState('bulk-ranker');
+        break;
+      case 'account-vault':
+      case 'video-cv':
+        setIsAccountModalOpen(true);
+        break;
+      case 'upload':
+      case 'results':
+      default:
+        setAppState('upload');
+        break;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans selection:bg-blue-500/30 pb-20 transition-colors duration-200">
+      {/* Wisdom AI Career Copilot & Interactive Platform Navigator */}
+      <WisdomChatbot
+        currentProfile={currentProfile}
+        uploadedFileName={uploadedFileName}
+        uploadedFileText={uploadedFileText}
+        extractedSkills={extractedSkills}
+        targetRole={targetRole}
+        onNavigate={handleWisdomNavigate}
+        isDarkMode={isDarkMode}
+      />
+
       {/* Account Modal */}
       <AccountModal
         isOpen={isAccountModalOpen}

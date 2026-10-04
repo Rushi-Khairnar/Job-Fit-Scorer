@@ -1,6 +1,6 @@
 {
-  "summary":  "Architectural plan to declutter, modernize, and declutter the ATS Diagnostics & Resume Intelligence Suite into a professional, spacious 3-stage executive workspace with unboxed typography and calm visual hierarchy.",
-  "updatedAt":  "2026-10-01T08:44:58.558769840Z",
+  "summary":  "Implementation plan for Wisdom, an AI career copilot and platform navigator for JobFit Studio. Features a floating expandable chat widget, mobile-friendly bottom sheet, contextual resume/profile awareness, Gemini 3.8 Flash backend proxy, and 1-click platform navigation actions.",
+  "updatedAt":  "2026-10-04T15:36:41.402901851Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
