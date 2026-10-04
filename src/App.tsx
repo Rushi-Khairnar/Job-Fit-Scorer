@@ -44,13 +44,15 @@ import {
   BookmarkCheck,
   Smartphone,
   Download,
-  LayoutGrid
+  LayoutGrid,
+  Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { JOB_DIRECTORY_DATA } from './jobsData';
 import { getRoleRoadmapProgress, getEnrichedRoadmapForRole } from './roadmapUtils';
+import { saveVideoCvBlob, loadVideoCvUrl, deleteVideoCvBlob } from './utils/videoCvStorage';
 import { UnifiedModelGapCard } from './components/UnifiedModelGapCard';
 import { QuizSection } from './components/QuizSection';
 import { RoadmapSection } from './components/RoadmapSection';
@@ -117,12 +119,36 @@ export type ActiveToolTab =
 
 const DEFAULT_PROFILE: UserProfile = {
   id: 'prof_default',
-  name: 'Alex Johnson',
+  name: 'Alex Johnson (Demo)',
+  occupation: 'Associate Data Analyst',
   email: 'alex.johnson@example.com',
   title: 'Data Scientist',
   experienceYears: 3,
   resumeFileName: 'Alex_Johnson_Resume.pdf',
-  resumeText: 'Experienced Data Scientist with 3+ years in Python, SQL, Machine Learning, and Cloud Analytics.',
+  resumeText: `Alex Johnson
+alex.johnson@example.com | +1 (555) 234-5678 | San Francisco, CA
+LinkedIn: linkedin.com/in/alex-johnson-dev | GitHub: github.com/alexjohnson
+
+PROFESSIONAL SUMMARY
+Results-driven Data Scientist with 3+ years of experience in Python, SQL, predictive modeling, machine learning pipelines, and cloud analytics. Led end-to-end customer churn classification models improving retention by 18%.
+
+TECHNICAL SKILLS
+- Languages: Python (Pandas, NumPy, Scikit-Learn, PyTorch), SQL (PostgreSQL, MySQL), R
+- Tools & Cloud: AWS (S3, SageMaker), Docker, Git, Tableau, Airflow
+- Methodologies: A/B Testing, Machine Learning, Data Warehousing, CI/CD
+
+EXPERIENCE
+Data Scientist | Apex Cloud Systems (2023 - Present)
+- Developed machine learning fraud detection models handling 100k daily transactions.
+- Automated SQL reporting pipelines reducing query latency by 35% and saving 12 analyst hours weekly.
+- Built interactive customer segmentation dashboards using Python and Tableau for senior executives.
+
+Junior Data Analyst | Horizon Analytics (2021 - 2023)
+- Analyzed marketing campaign performance datasets across 1.2M consumer touchpoints.
+- Built automated ETL scripts in Python to cleanse raw CRM data into Snowflake tables.
+
+EDUCATION
+B.S. in Computer Science & Statistics | State University (Graduated 2021)`,
   savedSkills: [
     { name: 'Python', level: 'Advanced' },
     { name: 'SQL', level: 'Intermediate' },
@@ -130,10 +156,13 @@ const DEFAULT_PROFILE: UserProfile = {
     { name: 'Data Analysis', level: 'Advanced' },
     { name: 'Git', level: 'Intermediate' }
   ],
-  completedRoadmapMilestones: [],
+  completedRoadmapMilestones: ['Data Scientist-0-0', 'Data Scientist-0-1'],
   enrolledRoadmapRole: 'Data Scientist',
   enrolledRoadmapDate: 'Oct 1, 2026',
-  quizScores: []
+  quizScores: [
+    { quizId: 'Data Scientist', title: 'Data Scientist Core Quiz', score: 9, total: 10, date: 'Oct 2, 2026' }
+  ],
+  isDemo: true
 };
 
 export default function App() {
@@ -569,6 +598,260 @@ export default function App() {
     setAllProfiles(prev => prev.map(p => p.id === currentProfile.id ? { ...p, ...partial } : p));
   };
 
+  // Account Switching & Multi-Session Isolation
+  const handleSwitchAccount = async (targetId: string) => {
+    const target = allProfiles.find(p => p.id === targetId);
+    if (!target) return;
+
+    setCurrentProfileId(target.id);
+
+    // 1. Completely isolate and wipe previous session state
+    setTextInput('');
+    setAnalyzedJobs([]);
+    setReturnState('upload');
+    if (appState === 'results' || appState === 'loading') {
+      setAppState('upload');
+    }
+
+    // 2. Load target role
+    setTargetRole(target.title || 'Software Engineer');
+
+    // 3. Load or clean resume data
+    if (target.resumeFileName) {
+      setUploadedFileName(target.resumeFileName);
+      setUploadedFileText(target.resumeText || '');
+      setUploadedFileUrl(null);
+      const skills = target.savedSkills.map(s => s.name);
+      setExtractedSkills(skills);
+      setSelectedSkills(skills);
+    } else {
+      setUploadedFileName('');
+      setUploadedFileText('');
+      setUploadedFileUrl(null);
+      setExtractedSkills([]);
+      setSelectedSkills(target.savedSkills.map(s => s.name));
+    }
+
+    // 4. Load proficiencies
+    const profs: Record<string, 'Beginner' | 'Intermediate' | 'Advanced'> = {};
+    target.savedSkills.forEach(s => {
+      profs[s.name] = s.level;
+    });
+    setSkillProficiencies(profs);
+
+    // 5. Try to load Video CV from storage if not loaded in memory
+    if (!target.videoCvUrl) {
+      const storedUrl = await loadVideoCvUrl(target.id);
+      if (storedUrl) {
+        setAllProfiles(prev => prev.map(p => p.id === target.id ? { ...p, videoCvUrl: storedUrl } : p));
+      }
+    }
+  };
+
+  const handleCreateAccount = async (profileData: {
+    name: string;
+    occupation: string;
+    title: string;
+    email: string;
+    experienceYears: number;
+    resumeFile?: File;
+    videoCvFile?: File;
+  }) => {
+    const newId = `prof_${Date.now()}`;
+    let extractedText = '';
+    let extractedSkillsList: string[] = [];
+    let resumeName: string | undefined = undefined;
+
+    // Handle resume file if provided
+    if (profileData.resumeFile) {
+      resumeName = profileData.resumeFile.name;
+      try {
+        if (resumeName.toLowerCase().endsWith('.pdf')) {
+          const arrayBuffer = await profileData.resumeFile.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let pdfText = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            pdfText += content.items.map((item: any) => item.str).join(' ') + ' ';
+          }
+          extractedText = pdfText;
+        } else if (resumeName.toLowerCase().endsWith('.docx') || resumeName.toLowerCase().endsWith('.doc')) {
+          const arrayBuffer = await profileData.resumeFile.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          extractedText = result.value;
+        } else {
+          extractedText = await profileData.resumeFile.text();
+        }
+
+        const found = new Set<string>();
+        AVAILABLE_SKILLS.forEach(skill => {
+          const regex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+          if (regex.test(extractedText)) {
+            found.add(skill);
+          }
+        });
+        extractedSkillsList = Array.from(found);
+      } catch (err) {
+        console.error('Error parsing uploaded resume on creation:', err);
+      }
+    }
+
+    // Handle video CV file if provided
+    let videoUrl: string | undefined = undefined;
+    let videoSize: string | undefined = undefined;
+    let videoDate: string | undefined = undefined;
+    let videoFileName: string | undefined = undefined;
+
+    if (profileData.videoCvFile) {
+      try {
+        videoUrl = await saveVideoCvBlob(newId, profileData.videoCvFile);
+        videoFileName = profileData.videoCvFile.name;
+        videoSize = (profileData.videoCvFile.size / (1024 * 1024)).toFixed(1) + ' MB';
+        videoDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      } catch (err) {
+        console.error('Error saving video CV on creation:', err);
+        videoUrl = URL.createObjectURL(profileData.videoCvFile);
+        videoFileName = profileData.videoCvFile.name;
+        videoSize = (profileData.videoCvFile.size / (1024 * 1024)).toFixed(1) + ' MB';
+        videoDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    }
+
+    const initialSkills = extractedSkillsList.length > 0
+      ? extractedSkillsList.map(s => ({ name: s, level: getSkillLevel(s) as 'Beginner' | 'Intermediate' | 'Advanced' }))
+      : [
+          { name: 'Python', level: 'Intermediate' as const },
+          { name: 'SQL', level: 'Beginner' as const }
+        ];
+
+    const newProfile: UserProfile = {
+      id: newId,
+      name: profileData.name.trim(),
+      occupation: profileData.occupation?.trim() || 'Software Professional',
+      email: profileData.email.trim(),
+      title: profileData.title?.trim() || 'Full Stack Developer',
+      experienceYears: Number(profileData.experienceYears) || 0,
+      resumeFileName: resumeName,
+      resumeText: extractedText || undefined,
+      videoCvUrl: videoUrl,
+      videoCvFileName: videoFileName,
+      videoCvSize: videoSize,
+      videoCvDate: videoDate,
+      savedSkills: initialSkills,
+      completedRoadmapMilestones: [],
+      enrolledRoadmapRole: profileData.title || undefined,
+      enrolledRoadmapDate: profileData.title ? new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : undefined,
+      quizScores: [],
+      isDemo: false
+    };
+
+    setAllProfiles(prev => [...prev, newProfile]);
+    setCurrentProfileId(newId);
+
+    // Completely clear previous session and isolate
+    setTextInput('');
+    setAnalyzedJobs([]);
+    setReturnState('upload');
+    setAppState('upload');
+    setTargetRole(newProfile.title);
+
+    if (resumeName) {
+      setUploadedFileName(resumeName);
+      setUploadedFileText(extractedText);
+      setUploadedFileUrl(null);
+      setExtractedSkills(initialSkills.map(s => s.name));
+      setSelectedSkills(initialSkills.map(s => s.name));
+    } else {
+      setUploadedFileName('');
+      setUploadedFileText('');
+      setUploadedFileUrl(null);
+      setExtractedSkills([]);
+      setSelectedSkills(initialSkills.map(s => s.name));
+    }
+
+    const profs: Record<string, 'Beginner' | 'Intermediate' | 'Advanced'> = {};
+    initialSkills.forEach(s => {
+      profs[s.name] = s.level;
+    });
+    setSkillProficiencies(profs);
+  };
+
+  const handleResetToDemo = () => {
+    const exists = allProfiles.find(p => p.id === 'prof_default');
+    if (!exists) {
+      setAllProfiles(prev => [DEFAULT_PROFILE, ...prev]);
+    }
+    handleSwitchAccount('prof_default');
+  };
+
+  const handleDeleteAccount = async (id: string) => {
+    if (allProfiles.length <= 1) return;
+    try {
+      await deleteVideoCvBlob(id);
+    } catch (e) {}
+
+    const remaining = allProfiles.filter(p => p.id !== id);
+    setAllProfiles(remaining);
+    const next = remaining[0];
+    handleSwitchAccount(next.id);
+  };
+
+  const handleUploadVideoCv = async (file: File) => {
+    try {
+      const url = await saveVideoCvBlob(currentProfile.id, file);
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+      const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      setAllProfiles(prev => prev.map(p => {
+        if (p.id === currentProfile.id) {
+          return {
+            ...p,
+            videoCvUrl: url,
+            videoCvFileName: file.name,
+            videoCvSize: sizeMb,
+            videoCvDate: dateStr
+          };
+        }
+        return p;
+      }));
+    } catch (err) {
+      console.error('Failed to upload video CV:', err);
+    }
+  };
+
+  const handleRemoveVideoCv = async () => {
+    try {
+      await deleteVideoCvBlob(currentProfile.id);
+      setAllProfiles(prev => prev.map(p => {
+        if (p.id === currentProfile.id) {
+          return {
+            ...p,
+            videoCvUrl: undefined,
+            videoCvFileName: undefined,
+            videoCvSize: undefined,
+            videoCvDate: undefined
+          };
+        }
+        return p;
+      }));
+    } catch (err) {
+      console.error('Failed to remove video CV:', err);
+    }
+  };
+
+  // Synchronize persisted Video CV URL on load
+  useEffect(() => {
+    let isMounted = true;
+    if (currentProfile.videoCvFileName && !currentProfile.videoCvUrl) {
+      loadVideoCvUrl(currentProfile.id).then(url => {
+        if (url && isMounted) {
+          setAllProfiles(prev => prev.map(p => p.id === currentProfile.id ? { ...p, videoCvUrl: url } : p));
+        }
+      });
+    }
+    return () => { isMounted = false; };
+  }, [currentProfile.id, currentProfile.videoCvFileName, currentProfile.videoCvUrl]);
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans selection:bg-blue-500/30 pb-20 transition-colors duration-200">
       {/* Account Modal */}
@@ -581,38 +864,17 @@ export default function App() {
           setAllProfiles(prev => prev.map(p => p.id === updated.id ? updated : p));
         }}
         onSwitchProfile={(id) => {
-          setCurrentProfileId(id);
-          const p = allProfiles.find(x => x.id === id);
-          if (p) {
-            setSelectedSkills(p.savedSkills.map(s => s.name));
-            setUploadedFileName(p.resumeFileName || '');
-          }
+          handleSwitchAccount(id);
         }}
-        onCreateProfile={(name, title) => {
-          const newP: UserProfile = {
-            id: `prof_${Date.now()}`,
-            name,
-            email: `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-            title,
-            experienceYears: 2,
-            savedSkills: [{ name: 'Python', level: 'Intermediate' }, { name: 'SQL', level: 'Beginner' }],
-            completedRoadmapMilestones: [],
-            enrolledRoadmapRole: title || 'Software Engineer',
-            enrolledRoadmapDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            quizScores: []
-          };
-          setAllProfiles(prev => [...prev, newP]);
-          setCurrentProfileId(newP.id);
-        }}
-        onDeleteProfile={(id) => {
-          if (allProfiles.length <= 1) return;
-          setAllProfiles(prev => prev.filter(p => p.id !== id));
-          setCurrentProfileId(allProfiles[0].id);
-        }}
+        onCreateProfile={handleCreateAccount}
+        onDeleteProfile={handleDeleteAccount}
         onUploadNewResume={(file) => {
           setUploadedFileName(file.name);
           handleFileUpload({ target: { files: [file] } } as any);
         }}
+        onUploadVideoCv={handleUploadVideoCv}
+        onRemoveVideoCv={handleRemoveVideoCv}
+        onResetToDemo={handleResetToDemo}
         onViewResume={() => setIsResumeViewerOpen(true)}
         onContinueRoadmap={(role) => handleOpenRoadmap(role)}
       />
@@ -637,6 +899,8 @@ export default function App() {
         fileName={uploadedFileName || currentProfile.resumeFileName || 'Resume.pdf'}
         fileUrl={uploadedFileUrl}
         resumeText={uploadedFileText || currentProfile.resumeText || ''}
+        videoCvUrl={currentProfile.videoCvUrl}
+        videoCvFileName={currentProfile.videoCvFileName}
         detectedSkills={extractedSkills.length > 0 ? extractedSkills : currentProfile.savedSkills.map(s => s.name)}
         isDarkMode={isDarkMode}
       />
@@ -945,12 +1209,17 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsAccountModalOpen(true)}
-              className="px-3 py-1.5 min-h-[38px] rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 flex items-center transition-all cursor-pointer"
+              className="px-3 py-1.5 min-h-[38px] rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 flex items-center space-x-1.5 transition-all cursor-pointer"
               title="Career Vault & Saved Resumes"
             >
-              <User className="w-3.5 h-3.5 mr-1.5 text-blue-600 dark:text-blue-400" />
+              <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               <span className="hidden sm:inline">{currentProfile.name.split(' ')[0]}</span>
               <span className="sm:hidden">Account</span>
+              {currentProfile.videoCvFileName && (
+                <span className="p-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-600 dark:text-purple-300" title="Video CV attached">
+                  <Video className="w-3 h-3" />
+                </span>
+              )}
             </button>
 
             {/* Dark Mode Toggle */}
@@ -1961,6 +2230,35 @@ export default function App() {
                   </button>
                 </div>
               )}
+
+              {/* Profile & Account Vault Quick Access */}
+              <div 
+                onClick={() => { setIsAccountModalOpen(true); setIsMobileToolsOpen(false); }}
+                className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex items-center justify-between cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/40 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white">{currentProfile.name}</span>
+                      {currentProfile.isDemo ? (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 font-bold uppercase">Demo</span>
+                      ) : (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold uppercase">Active</span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                      {currentProfile.occupation || currentProfile.title} · {allProfiles.length} Account{allProfiles.length > 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 flex items-center">
+                  <span>Manage</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </div>
+              </div>
 
               {/* Tools List */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">

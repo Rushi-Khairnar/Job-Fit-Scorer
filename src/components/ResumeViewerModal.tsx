@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Eye,
   Sparkles,
-  BookOpen
+  BookOpen,
+  Video
 } from 'lucide-react';
 
 interface ResumeViewerModalProps {
@@ -20,6 +21,8 @@ interface ResumeViewerModalProps {
   fileName?: string;
   fileUrl?: string | null;
   resumeText?: string;
+  videoCvUrl?: string | null;
+  videoCvFileName?: string;
   detectedSkills?: string[];
   isDarkMode?: boolean;
 }
@@ -30,11 +33,13 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
   fileName = 'Resume.pdf',
   fileUrl = null,
   resumeText = '',
+  videoCvUrl = null,
+  videoCvFileName,
   detectedSkills = [],
   isDarkMode = false
 }) => {
   const isPdf = fileName?.toLowerCase().endsWith('.pdf');
-  const [activeTab, setActiveTab] = useState<'pdf' | 'text'>(fileUrl && isPdf ? 'pdf' : 'text');
+  const [activeTab, setActiveTab] = useState<'pdf' | 'text' | 'video'>(fileUrl && isPdf ? 'pdf' : videoCvUrl && !resumeText ? 'video' : 'text');
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -200,6 +205,19 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
               <BookOpen className="w-3.5 h-3.5" />
               <span>Extracted Text Reader</span>
             </button>
+            {videoCvUrl && (
+              <button
+                onClick={() => setActiveTab('video')}
+                className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer flex items-center space-x-1.5 ${
+                  activeTab === 'video'
+                    ? 'bg-purple-600 text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>Video CV Pitch</span>
+              </button>
+            )}
           </div>
 
           {/* Search bar inside extracted text tab */}
@@ -249,7 +267,24 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
 
         {/* Content Area */}
         <div className="flex-1 overflow-hidden relative bg-neutral-100/50 dark:bg-neutral-950/40 p-4 sm:p-6">
-          {activeTab === 'pdf' && fileUrl ? (
+          {activeTab === 'video' && videoCvUrl ? (
+            <div className="w-full h-full rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-950 flex flex-col items-center justify-center p-6 shadow-xs">
+              <div className="max-w-2xl w-full space-y-3">
+                <div className="rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center shadow-2xl">
+                  <video
+                    src={videoCvUrl}
+                    controls
+                    className="w-full h-full object-contain"
+                    autoPlay={false}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
+                  <span className="font-semibold text-white">{videoCvFileName || 'Candidate Video CV'}</span>
+                  <span>Elevator Pitch</span>
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'pdf' && fileUrl ? (
             <div className="w-full h-full rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white shadow-xs">
               <iframe
                 src={`${fileUrl}#view=FitH`}
