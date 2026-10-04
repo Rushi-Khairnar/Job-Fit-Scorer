@@ -41,7 +41,10 @@ import {
   FileDown,
   Globe,
   Eye,
-  BookmarkCheck
+  BookmarkCheck,
+  Smartphone,
+  Download,
+  LayoutGrid
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -219,6 +222,41 @@ export default function App() {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
+
+  // Android & Mobile PWA Install state
+  const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    const handleAppInstalled = () => {
+      setIsPwaInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallPwa = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        setIsPwaInstalled(true);
+      }
+      setDeferredPrompt(null);
+    }
+  };
   
   // Inputs
   const [inputType, setInputType] = useState<'file' | 'text'>('file');
@@ -620,8 +658,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-1 sm:space-x-2">
+          {/* Navigation Links (Desktop) */}
+          <div className="hidden md:flex items-center space-x-1 sm:space-x-2">
             {/* Home Button */}
             <button
               onClick={() => setAppState('upload')}
@@ -885,11 +923,29 @@ export default function App() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Right Header Actions */}
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
+            {/* Android / Desktop PWA Install Button */}
+            {deferredPrompt && (
+              <button
+                type="button"
+                onClick={handleInstallPwa}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 flex items-center transition-all cursor-pointer min-h-[38px]"
+                title="Install Android App to your Home Screen"
+              >
+                <Smartphone className="w-3.5 h-3.5 mr-1 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden sm:inline">Install App</span>
+                <span className="sm:hidden">Install</span>
+              </button>
+            )}
 
             {/* Profile Vault Button */}
             <button
+              type="button"
               onClick={() => setIsAccountModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 flex items-center transition-all ml-1 cursor-pointer"
+              className="px-3 py-1.5 min-h-[38px] rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 flex items-center transition-all cursor-pointer"
               title="Career Vault & Saved Resumes"
             >
               <User className="w-3.5 h-3.5 mr-1.5 text-blue-600 dark:text-blue-400" />
@@ -899,8 +955,9 @@ export default function App() {
 
             {/* Dark Mode Toggle */}
             <button 
+              type="button"
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white transition-colors ml-1 cursor-pointer"
+              className="p-2 min-h-[38px] min-w-[38px] rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Toggle theme"
               title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
@@ -911,7 +968,7 @@ export default function App() {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-24 md:pb-12">
         <AnimatePresence mode="wait">
           {/* UPLOAD & MANUAL ENTRY VIEW */}
           {appState === 'upload' && (
@@ -1774,6 +1831,257 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Android & Mobile Fixed Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200/90 dark:border-neutral-800 pb-[env(safe-area-inset-bottom,0px)] shadow-lg print:hidden">
+        <div className="grid grid-cols-5 items-center h-16 px-1">
+          <button
+            type="button"
+            onClick={() => setAppState('upload')}
+            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+              appState === 'upload' || appState === 'loading'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Network className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Match</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAppState('ats-diagnostics')}
+            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+              appState === 'ats-diagnostics'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <ShieldCheck className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">ATS Suite</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAppState('job-directory')}
+            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+              appState === 'job-directory'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Compass className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Roadmaps</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAppState('interview-prep')}
+            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+              appState === 'interview-prep'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <BrainCircuit className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Interview</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileToolsOpen(true)}
+            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+              isMobileToolsOpen || !['upload', 'loading', 'results', 'ats-diagnostics', 'job-directory', 'interview-prep'].includes(appState)
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <LayoutGrid className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Tools</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Tools Drawer (Bottom Sheet) */}
+      <AnimatePresence>
+        {isMobileToolsOpen && (
+          <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileToolsOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs cursor-pointer"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="relative z-10 bg-white dark:bg-neutral-900 rounded-t-3xl border-t border-neutral-200 dark:border-neutral-800 p-5 space-y-4 max-h-[85vh] overflow-y-auto overscroll-contain shadow-2xl"
+            >
+              {/* Grab Handle */}
+              <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto" />
+
+              <div className="flex items-center justify-between pt-1">
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                    Career Suite & Tools
+                  </h3>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    Document generators, assessments, and interview prep
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileToolsOpen(false)}
+                  className="p-2 min-h-[44px] min-w-[44px] rounded-full text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
+                  aria-label="Close tools menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Install PWA Prompt for Android */}
+              {deferredPrompt && (
+                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-3">
+                  <div className="flex items-center space-x-2.5">
+                    <Smartphone className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200">Install Android App</div>
+                      <div className="text-[11px] text-emerald-700 dark:text-emerald-400">Add to home screen for full-screen offline use</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { handleInstallPwa(); setIsMobileToolsOpen(false); }}
+                    className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 cursor-pointer shadow-xs"
+                  >
+                    Install
+                  </button>
+                </div>
+              )}
+
+              {/* Tools List */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                {[
+                  {
+                    id: 'ats-diagnostics',
+                    label: 'ATS Diagnostics (10-in-1)',
+                    sub: 'Parser simulator & impact scorer',
+                    icon: ShieldCheck,
+                    color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400',
+                    action: () => setAppState('ats-diagnostics')
+                  },
+                  {
+                    id: 'build-cv',
+                    label: 'Resume Builder',
+                    sub: '1-click Word (.docx) & PDF (.pdf)',
+                    icon: FileText,
+                    color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/60 dark:text-teal-400',
+                    action: () => handleOpenBuildCV(targetRole, extractedSkills)
+                  },
+                  {
+                    id: 'cover-letter',
+                    label: 'Cover Letter Writer',
+                    sub: 'Tailored letters for any tech role',
+                    icon: Send,
+                    color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/60 dark:text-cyan-400',
+                    action: () => setAppState('cover-letter')
+                  },
+                  {
+                    id: 'application-tracker',
+                    label: 'Application Tracker',
+                    sub: 'Pipeline, interviews & offers',
+                    icon: ClipboardList,
+                    color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400',
+                    action: () => setAppState('application-tracker')
+                  },
+                  {
+                    id: 'quizzes',
+                    label: 'Skill Quizzes (10 Questions Each)',
+                    sub: '10 skill categories with scoring',
+                    icon: HelpCircle,
+                    color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/60 dark:text-purple-400',
+                    action: () => setAppState('quizzes')
+                  },
+                  {
+                    id: 'interview-prep',
+                    label: 'Interview Practice',
+                    sub: 'Role STAR questions & answers',
+                    icon: BrainCircuit,
+                    color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400',
+                    action: () => setAppState('interview-prep')
+                  },
+                  {
+                    id: 'salary-estimator',
+                    label: 'Salary Calculator',
+                    sub: 'India metro hubs & global rates',
+                    icon: DollarSign,
+                    color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400',
+                    action: () => setAppState('salary-estimator')
+                  },
+                  {
+                    id: 'market-explorer',
+                    label: 'Market Explorer (Live)',
+                    sub: 'Live 2026 hiring trends & tech stack',
+                    icon: Globe,
+                    color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400',
+                    action: () => setAppState('market-explorer')
+                  },
+                  {
+                    id: 'culture-fit',
+                    label: 'Work Culture Fit',
+                    sub: 'Startup, Big Tech, or Remote',
+                    icon: HeartHandshake,
+                    color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/60 dark:text-pink-400',
+                    action: () => setAppState('culture-fit')
+                  },
+                  {
+                    id: 'bulk-ranker',
+                    label: 'Candidate Ranker',
+                    sub: 'Batch compare multiple resumes',
+                    icon: Users,
+                    color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/60 dark:text-violet-400',
+                    action: () => setAppState('bulk-ranker')
+                  },
+                  {
+                    id: 'profile-auditor',
+                    label: 'Profile Auditor',
+                    sub: 'GitHub projects & LinkedIn check',
+                    icon: ShieldCheck,
+                    color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400',
+                    action: () => setAppState('profile-auditor')
+                  }
+                ].map(tool => {
+                  const Icon = tool.icon;
+                  return (
+                    <button
+                      key={tool.id}
+                      type="button"
+                      onClick={() => { tool.action(); setIsMobileToolsOpen(false); }}
+                      className="w-full p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center space-x-3 text-left transition-colors cursor-pointer min-h-[48px]"
+                    >
+                      <div className={`p-2 rounded-xl shrink-0 ${tool.color}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                          {tool.label}
+                        </div>
+                        <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                          {tool.sub}
+                        </div>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

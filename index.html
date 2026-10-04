@@ -2,13 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <title>Job-Fit Scorer | Career & Resume Tools</title>
     <meta name="description" content="Match your resume to tech jobs, rewrite resume bullet points, calculate salaries, practice interview questions, and build your career." />
     <meta property="og:title" content="Job-Fit Scorer | Career & Resume Tools" />
     <meta property="og:description" content="See how well your skills match tech jobs, find skills to learn next, and explore 12 easy career tools." />
+    <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
   </head>
-  <body>
+  <body class="overscroll-none antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

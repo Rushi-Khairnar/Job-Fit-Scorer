@@ -372,7 +372,7 @@ B.S. in Computer Science & Engineering`;
           </div>
 
           {/* Unboxed Tabular Health Vitals */}
-          <div className="flex items-center gap-6 sm:gap-8 pt-4 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-neutral-800 shrink-0">
+          <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-8 pt-4 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-neutral-800 shrink-0 overflow-x-auto">
             <div>
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-0.5">
                 ATS Fidelity
@@ -476,7 +476,7 @@ B.S. in Computer Science & Engineering`;
                 key={tool.id}
                 type="button"
                 onClick={() => setActiveTab(tool.id)}
-                className={`px-3.5 py-2 text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer whitespace-nowrap border-b-2 -mb-px ${
+                className={`px-3.5 py-2.5 min-h-[44px] text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer whitespace-nowrap border-b-2 -mb-px ${
                   isToolActive
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
                     : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
