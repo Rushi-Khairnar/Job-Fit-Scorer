@@ -16,13 +16,11 @@ import {
   Eye,
   ArrowRight,
   BookmarkCheck,
-  Video,
   Play,
   RotateCcw,
   Mail,
   Clock,
   Target,
-  FileVideo,
   AlertCircle
 } from 'lucide-react';
 import { getRoleRoadmapProgress } from '../roadmapUtils';
@@ -62,12 +60,9 @@ interface AccountModalProps {
     email: string;
     experienceYears: number;
     resumeFile?: File;
-    videoCvFile?: File;
   }) => void;
   onDeleteProfile: (profileId: string) => void;
   onUploadNewResume: (file: File) => void;
-  onUploadVideoCv?: (file: File) => void;
-  onRemoveVideoCv?: () => void;
   onResetToDemo?: () => void;
   onViewResume?: () => void;
   onContinueRoadmap?: (role: string) => void;
@@ -96,8 +91,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onCreateProfile,
   onDeleteProfile,
   onUploadNewResume,
-  onUploadVideoCv,
-  onRemoveVideoCv,
   onResetToDemo,
   onViewResume,
   onContinueRoadmap
@@ -126,22 +119,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   const [newEmail, setNewEmail] = useState('');
   const [newExperienceYears, setNewExperienceYears] = useState<number>(2);
   const [newResumeFile, setNewResumeFile] = useState<File | null>(null);
-  const [newVideoCvFile, setNewVideoCvFile] = useState<File | null>(null);
-  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [createError, setCreateError] = useState('');
-
-  // Generate preview object URL when video CV is chosen during profile creation
-  useEffect(() => {
-    if (newVideoCvFile) {
-      const url = URL.createObjectURL(newVideoCvFile);
-      setVideoPreviewUrl(url);
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    } else {
-      setVideoPreviewUrl(null);
-    }
-  }, [newVideoCvFile]);
 
   // Feedback notifications
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -184,8 +162,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       title: newTitle.trim(),
       email: newEmail.trim(),
       experienceYears: Number(newExperienceYears) || 0,
-      resumeFile: newResumeFile || undefined,
-      videoCvFile: newVideoCvFile || undefined
+      resumeFile: newResumeFile || undefined
     });
 
     // Reset creation fields
@@ -195,7 +172,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     setNewEmail('');
     setNewExperienceYears(2);
     setNewResumeFile(null);
-    setNewVideoCvFile(null);
     setIsCreating(false);
 
     setSwitchFeedback(`Created and signed in to ${newName.trim()}'s account. All previous session data cleared.`);
@@ -208,13 +184,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     const target = allProfiles.find(p => p.id === profileId);
     setSwitchFeedback(`Switched to ${target ? target.name : 'profile'}. Active session loaded cleanly.`);
     setTimeout(() => setSwitchFeedback(null), 3000);
-  };
-
-  const handleVideoUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && onUploadVideoCv) {
-      onUploadVideoCv(file);
-    }
   };
 
   return (
@@ -232,7 +201,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             <div>
               <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Career Profile & Vault</h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Multi-account career isolation with PDF resume & Video CV storage.
+                Multi-account career isolation with PDF resume & profile data.
               </p>
             </div>
           </div>
@@ -309,11 +278,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   <span className="text-[10px] opacity-75">
                     ({p.title || p.occupation || 'Candidate'})
                   </span>
-                  {p.videoCvFileName && (
-                    <span className={`p-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'text-purple-500'}`} title="Video CV attached">
-                      <Video className="w-3 h-3" />
-                    </span>
-                  )}
                 </button>
               );
             })}
@@ -363,15 +327,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               }`}>
                 <FileText className="w-3.5 h-3.5 mr-1 text-blue-500" />
                 {currentProfile.resumeFileName ? `Resume: ${currentProfile.resumeFileName}` : 'No Written Resume'}
-              </span>
-
-              <span className={`px-2.5 py-1 rounded-lg flex items-center font-medium ${
-                currentProfile.videoCvFileName 
-                  ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800' 
-                  : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
-              }`}>
-                <Video className="w-3.5 h-3.5 mr-1 text-purple-500" />
-                {currentProfile.videoCvFileName ? `Video CV: ${currentProfile.videoCvFileName}` : 'No Video CV Uploaded'}
               </span>
 
               {currentProfile.id !== 'prof_default' && onResetToDemo && (
@@ -504,17 +459,17 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 </div>
               </div>
 
-              {/* Attach Initial Resume & Video CV during Profile Creation */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {/* Attach Initial Resume during Profile Creation */}
+              <div className="pt-1">
                 <div className="p-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2">
                   <span className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 flex items-center">
                     <FileText className="w-3.5 h-3.5 mr-1 text-blue-600" />
-                    Attach Resume (Optional)
+                    Attach Resume Document (Optional)
                   </span>
                   <label className="flex items-center justify-center p-2.5 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-blue-500 cursor-pointer text-xs text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40">
                     <Upload className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
-                    <span className="truncate max-w-[180px]">
-                      {newResumeFile ? newResumeFile.name : 'Choose PDF / Word'}
+                    <span className="truncate max-w-[240px]">
+                      {newResumeFile ? newResumeFile.name : 'Choose PDF / Word resume (.pdf, .docx)'}
                     </span>
                     <input
                       type="file"
@@ -528,7 +483,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   </label>
                   {newResumeFile && (
                     <div className="flex items-center justify-between text-[10px] text-neutral-500">
-                      <span className="truncate max-w-[140px] font-medium text-blue-600">{newResumeFile.name}</span>
+                      <span className="truncate max-w-[200px] font-medium text-blue-600">{newResumeFile.name}</span>
                       <button
                         type="button"
                         onClick={() => setNewResumeFile(null)}
@@ -538,55 +493,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       </button>
                     </div>
                   )}
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 flex items-center">
-                      <Video className="w-3.5 h-3.5 mr-1 text-purple-600" />
-                      Attach Video CV (Optional)
-                    </span>
-                    {newVideoCvFile && (
-                      <button
-                        type="button"
-                        onClick={() => setNewVideoCvFile(null)}
-                        className="text-[10px] text-rose-500 hover:text-rose-600 font-medium cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-
-                  {videoPreviewUrl ? (
-                    <div className="space-y-2">
-                      <div className="rounded-lg overflow-hidden bg-black aspect-video max-h-36 flex items-center justify-center">
-                        <video src={videoPreviewUrl} controls className="w-full h-full object-contain" />
-                      </div>
-                      <div className="text-[10px] text-neutral-500 flex items-center justify-between">
-                        <span className="truncate max-w-[140px] font-medium text-purple-600">{newVideoCvFile?.name}</span>
-                        <span>{newVideoCvFile ? (newVideoCvFile.size / (1024 * 1024)).toFixed(1) + ' MB' : ''}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <label className="flex items-center justify-center p-2.5 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 hover:border-purple-500 cursor-pointer text-xs text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40">
-                      <Video className="w-3.5 h-3.5 mr-1.5 text-purple-500" />
-                      <span className="truncate max-w-[180px]">
-                        Choose Video (.mp4, .webm)
-                      </span>
-                      <input
-                        type="file"
-                        accept="video/mp4,video/webm,video/ogg,video/quicktime"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) setNewVideoCvFile(f);
-                        }}
-                      />
-                    </label>
-                  )}
-                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                    Upload a 30-90s elevator pitch video introducing yourself to recruiters.
-                  </p>
                 </div>
               </div>
 
@@ -693,25 +599,25 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           </div>
         </div>
 
-        {/* Document & Video Media Vault */}
+        {/* Resume & Document Vault */}
         <div className="space-y-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-            Document & Video Media Vault
+            Resume & Document Vault
           </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 1. Traditional Written CV Card */}
-            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
+          <div className="w-full">
+            {/* Written Resume Document Card */}
+            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="space-y-1">
                 <div className="flex items-center space-x-2.5">
                   <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-xl text-blue-700 dark:text-blue-300">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                      Traditional Written CV
+                      Candidate Resume Document
                     </div>
-                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[180px]">
+                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[260px]">
                       {currentProfile.resumeFileName ? currentProfile.resumeFileName : 'No Resume Uploaded'}
                     </div>
                   </div>
@@ -723,21 +629,21 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 </p>
               </div>
 
-              <div className="flex items-center space-x-2 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60">
+              <div className="flex items-center space-x-2 shrink-0">
                 {currentProfile.resumeFileName && onViewResume && (
                   <button
                     type="button"
                     onClick={onViewResume}
-                    className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 flex items-center justify-center transition-all cursor-pointer"
+                    className="py-2 px-3 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 flex items-center justify-center transition-all cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5 mr-1" />
-                    <span>View CV</span>
+                    <span>View Resume</span>
                   </button>
                 )}
 
-                <label className="flex-1 cursor-pointer py-2 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 hover:border-blue-500 flex items-center justify-center transition-all text-center">
-                  <Upload className="w-3.5 h-3.5 mr-1 text-blue-600" />
-                  <span>{currentProfile.resumeFileName ? 'Replace' : 'Upload CV'}</span>
+                <label className="cursor-pointer py-2 px-3.5 rounded-xl text-xs font-semibold bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 hover:border-blue-500 flex items-center justify-center transition-all text-center">
+                  <Upload className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
+                  <span>{currentProfile.resumeFileName ? 'Replace CV' : 'Upload Resume'}</span>
                   <input
                     type="file"
                     accept=".pdf,.docx,.doc,.txt"
@@ -748,89 +654,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     }}
                   />
                 </label>
-              </div>
-            </div>
-
-            {/* 2. Video CV / Video Pitch Card */}
-            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-xl text-purple-700 dark:text-purple-300">
-                      <Video className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                        Video CV / Video Pitch
-                      </div>
-                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[180px]">
-                        {currentProfile.videoCvFileName ? currentProfile.videoCvFileName : 'No Video Attached'}
-                      </div>
-                    </div>
-                  </div>
-                  {currentProfile.videoCvFileName && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
-                      Attached
-                    </span>
-                  )}
-                </div>
-
-                {currentProfile.videoCvUrl ? (
-                  <div className="space-y-2">
-                    <div className="rounded-xl overflow-hidden bg-black/90 aspect-video flex items-center justify-center">
-                      <video
-                        src={currentProfile.videoCvUrl}
-                        controls
-                        className="w-full h-full object-contain"
-                        preload="metadata"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-neutral-400">
-                      <span>{currentProfile.videoCvDate || 'Recently uploaded'}</span>
-                      <span>{currentProfile.videoCvSize || ''}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                    Upload a 30-90 second elevator video pitch introducing yourself and your top projects to tech recruiters.
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60">
-                {currentProfile.videoCvUrl && onViewResume && (
-                  <button
-                    type="button"
-                    onClick={onViewResume}
-                    className="py-2 px-3 rounded-xl text-xs font-semibold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/60 flex items-center justify-center transition-all cursor-pointer"
-                    title="Watch in Viewer Modal"
-                  >
-                    <Eye className="w-3.5 h-3.5 mr-1" />
-                    <span>Watch Full</span>
-                  </button>
-                )}
-
-                <label className="flex-1 cursor-pointer py-2 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 hover:border-purple-500 flex items-center justify-center transition-all text-center">
-                  <Video className="w-3.5 h-3.5 mr-1 text-purple-600" />
-                  <span>{currentProfile.videoCvUrl ? 'Replace Video' : 'Upload Video CV'}</span>
-                  <input
-                    type="file"
-                    accept="video/mp4,video/webm,video/ogg,video/quicktime"
-                    className="hidden"
-                    onChange={handleVideoUploadChange}
-                  />
-                </label>
-
-                {currentProfile.videoCvUrl && onRemoveVideoCv && (
-                  <button
-                    type="button"
-                    onClick={onRemoveVideoCv}
-                    className="py-2 px-3 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-neutral-300 dark:border-neutral-700 transition-colors cursor-pointer"
-                    title="Remove Video CV"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
               </div>
             </div>
           </div>

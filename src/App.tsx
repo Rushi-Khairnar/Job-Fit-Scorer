@@ -936,8 +936,6 @@ export default function App() {
           setUploadedFileName(file.name);
           handleFileUpload({ target: { files: [file] } } as any);
         }}
-        onUploadVideoCv={handleUploadVideoCv}
-        onRemoveVideoCv={handleRemoveVideoCv}
         onResetToDemo={handleResetToDemo}
         onViewResume={() => setIsResumeViewerOpen(true)}
         onContinueRoadmap={(role) => handleOpenRoadmap(role)}
@@ -963,8 +961,6 @@ export default function App() {
         fileName={uploadedFileName || currentProfile.resumeFileName || 'Resume.pdf'}
         fileUrl={uploadedFileUrl}
         resumeText={uploadedFileText || currentProfile.resumeText || ''}
-        videoCvUrl={currentProfile.videoCvUrl}
-        videoCvFileName={currentProfile.videoCvFileName}
         detectedSkills={extractedSkills.length > 0 ? extractedSkills : currentProfile.savedSkills.map(s => s.name)}
         isDarkMode={isDarkMode}
       />
@@ -1279,11 +1275,6 @@ export default function App() {
               <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               <span className="hidden sm:inline">{currentProfile.name.split(' ')[0]}</span>
               <span className="sm:hidden">Account</span>
-              {currentProfile.videoCvFileName && (
-                <span className="p-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-600 dark:text-purple-300" title="Video CV attached">
-                  <Video className="w-3 h-3" />
-                </span>
-              )}
             </button>
 
             {/* Dark Mode Toggle */}
