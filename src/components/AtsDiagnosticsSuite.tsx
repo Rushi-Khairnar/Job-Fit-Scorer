@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   FileCheck2,
   RefreshCw,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 import {
   runAtsParseSimulator,
@@ -53,6 +54,7 @@ export interface AtsDiagnosticsSuiteProps {
   resumeText: string;
   onUpdateResumeText: (text: string) => void;
   targetRoleTitle?: string;
+  onBackToHome?: () => void;
 }
 
 type DiagnosticsTab = 
@@ -96,7 +98,8 @@ interface ChatInterviewTurn {
 export const AtsDiagnosticsSuite: React.FC<AtsDiagnosticsSuiteProps> = ({
   resumeText,
   onUpdateResumeText,
-  targetRoleTitle = 'Data Scientist'
+  targetRoleTitle = 'Data Scientist',
+  onBackToHome
 }) => {
   const [activeTab, setActiveTab] = useState<DiagnosticsTab>('ats-parse');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -352,7 +355,20 @@ B.S. in Computer Science & Engineering`;
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 py-2">
+    <div className="max-w-6xl mx-auto space-y-5 py-2">
+      {onBackToHome && (
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={onBackToHome}
+            className="inline-flex items-center space-x-2 px-3 py-2 min-h-[38px] rounded-xl text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-2xs active:scale-98 cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Job Matches & Tools</span>
+          </button>
+        </div>
+      )}
+
       {/* Executive Clean Header */}
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 sm:p-7 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">

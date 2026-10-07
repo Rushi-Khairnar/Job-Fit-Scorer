@@ -70,6 +70,7 @@ import { ApplicationTracker } from './components/ApplicationTracker';
 import { AtsDiagnosticsSuite } from './components/AtsDiagnosticsSuite';
 import { AccountModal, UserProfile } from './components/AccountModal';
 import { WisdomChatbot } from './components/WisdomChatbot';
+import { ExitConfirmationModal } from './components/ExitConfirmationModal';
 import { getSkillLevel, getSkillLevelBadgeClasses } from './skillLevels';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -117,6 +118,56 @@ export type ActiveToolTab =
   | 'bulk-ranker'          // Bulk Candidate Ranker
   | 'application-tracker'  // Application Pipeline Tracker
   | 'ats-diagnostics';     // 10-Tool ATS Diagnostics & Simulator Suite
+
+export const TAB_TO_HASH: Record<ActiveToolTab, string> = {
+  'upload': '#home',
+  'loading': '#loading',
+  'results': '#results',
+  'job-directory': '#roadmaps',
+  'quizzes': '#quizzes',
+  'build-cv': '#resume-builder',
+  'profile-auditor': '#profile-auditor',
+  'interview-prep': '#interview-prep',
+  'culture-fit': '#culture-fit',
+  'salary-estimator': '#salary-estimator',
+  'market-explorer': '#market-explorer',
+  'cover-letter': '#cover-letter',
+  'bulk-ranker': '#bulk-ranker',
+  'application-tracker': '#application-tracker',
+  'ats-diagnostics': '#ats-diagnostics'
+};
+
+export const HASH_TO_TAB: Record<string, ActiveToolTab> = {
+  '#home': 'upload',
+  '#upload': 'upload',
+  '': 'upload',
+  '#results': 'results',
+  '#roadmaps': 'job-directory',
+  '#job-directory': 'job-directory',
+  '#quizzes': 'quizzes',
+  '#resume-builder': 'build-cv',
+  '#build-cv': 'build-cv',
+  '#profile-auditor': 'profile-auditor',
+  '#interview-prep': 'interview-prep',
+  '#culture-fit': 'culture-fit',
+  '#salary-estimator': 'salary-estimator',
+  '#market-explorer': 'market-explorer',
+  '#cover-letter': 'cover-letter',
+  '#bulk-ranker': 'bulk-ranker',
+  '#application-tracker': 'application-tracker',
+  '#ats-diagnostics': 'ats-diagnostics',
+  '#ats-suite': 'ats-diagnostics'
+};
+
+export const getInitialTabFromHash = (): ActiveToolTab => {
+  if (typeof window !== 'undefined') {
+    const hash = window.location.hash.toLowerCase();
+    if (hash && HASH_TO_TAB[hash]) {
+      return HASH_TO_TAB[hash];
+    }
+  }
+  return 'upload';
+};
 
 const DEFAULT_PROFILE: UserProfile = {
   id: 'prof_default',
@@ -176,8 +227,11 @@ export default function App() {
     return false;
   });
 
-  const [appState, setAppState] = useState<ActiveToolTab>('upload');
+  const [appState, setAppState] = useState<ActiveToolTab>(() => {
+    return getInitialTabFromHash();
+  });
   const [returnState, setReturnState] = useState<ActiveToolTab>('upload');
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   
   // Specific role context for Quiz, Roadmap, CV, Cover Letter
   const [targetRole, setTargetRole] = useState<string>('Data Scientist');
@@ -903,6 +957,151 @@ export default function App() {
         setAppState('upload');
         break;
     }
+  };
+
+  // Track state in refs for history popstate listeners without stale closures
+  const appStateRef = useRef<ActiveToolTab>(appState);
+  useEffect(() => {
+    appStateRef.current = appState;
+  }, [appState]);
+
+  const isExitConfirmOpenRef = useRef(isExitConfirmOpen);
+  useEffect(() => {
+    isExitConfirmOpenRef.current = isExitConfirmOpen;
+  }, [isExitConfirmOpen]);
+
+  const isAccountModalOpenRef = useRef(isAccountModalOpen);
+  useEffect(() => {
+    isAccountModalOpenRef.current = isAccountModalOpen;
+  }, [isAccountModalOpen]);
+
+  const isLiveIntelModalOpenRef = useRef(isLiveIntelModalOpen);
+  useEffect(() => {
+    isLiveIntelModalOpenRef.current = isLiveIntelModalOpen;
+  }, [isLiveIntelModalOpen]);
+
+  const isResumeViewerOpenRef = useRef(isResumeViewerOpen);
+  useEffect(() => {
+    isResumeViewerOpenRef.current = isResumeViewerOpen;
+  }, [isResumeViewerOpen]);
+
+  const isMobileToolsOpenRef = useRef(isMobileToolsOpen);
+  useEffect(() => {
+    isMobileToolsOpenRef.current = isMobileToolsOpen;
+  }, [isMobileToolsOpen]);
+
+  const isAllowExitRef = useRef(false);
+  const isHandlingPopStateRef = useRef(false);
+
+  // Synchronize appState changes to browser URL hash and ensure top-level viewport scroll reset
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Reset window vertical scroll position so entering features starts right at the top
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+    const targetHash = TAB_TO_HASH[appState] || '#home';
+    const currentHash = window.location.hash.toLowerCase();
+
+    if (isHandlingPopStateRef.current) {
+      isHandlingPopStateRef.current = false;
+      return;
+    }
+
+    if (currentHash !== targetHash) {
+      window.history.pushState({ appState }, '', targetHash);
+    }
+  }, [appState]);
+
+  // Handle browser popstate (Android system Back button / swipe gesture / browser navigation)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Seed baseline history state if starting fresh
+    const targetHash = TAB_TO_HASH[appState] || '#home';
+    if (!window.history.state || !window.history.state.appState) {
+      window.history.replaceState({ appState, isBase: true }, '', targetHash);
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (isAllowExitRef.current) {
+        return; // Allow native exit
+      }
+
+      // 1. If Exit Confirmation dialog is already open, back button dismisses it
+      if (isExitConfirmOpenRef.current) {
+        setIsExitConfirmOpen(false);
+        window.history.pushState({ appState: 'upload', isBase: true }, '', '#home');
+        return;
+      }
+
+      // 2. If any modal or bottom drawer is currently open, dismiss it first
+      if (isMobileToolsOpenRef.current) {
+        setIsMobileToolsOpen(false);
+        window.history.pushState({ appState: appStateRef.current }, '', TAB_TO_HASH[appStateRef.current] || '#home');
+        return;
+      }
+
+      if (isAccountModalOpenRef.current) {
+        setIsAccountModalOpen(false);
+        window.history.pushState({ appState: appStateRef.current }, '', TAB_TO_HASH[appStateRef.current] || '#home');
+        return;
+      }
+
+      if (isLiveIntelModalOpenRef.current) {
+        setIsLiveIntelModalOpen(false);
+        window.history.pushState({ appState: appStateRef.current }, '', TAB_TO_HASH[appStateRef.current] || '#home');
+        return;
+      }
+
+      if (isResumeViewerOpenRef.current) {
+        setIsResumeViewerOpen(false);
+        window.history.pushState({ appState: appStateRef.current }, '', TAB_TO_HASH[appStateRef.current] || '#home');
+        return;
+      }
+
+      // 3. If user is in a feature/sub-tool (e.g. ATS Diagnostics Suite, Learning Roadmaps, Quizzes, CV Builder, etc.)
+      if (appStateRef.current !== 'upload') {
+        isHandlingPopStateRef.current = true;
+        setAppState('upload');
+        window.history.replaceState({ appState: 'upload', isBase: true }, '', '#home');
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        return;
+      }
+
+      // 4. User is ALREADY on the main home screen ('upload') and pressed Back
+      // Show confirmation prompt before leaving instead of abruptly closing tab
+      window.history.pushState({ appState: 'upload', isBase: true }, '', '#home');
+      setIsExitConfirmOpen(true);
+    };
+
+    const handleHashChange = () => {
+      const h = window.location.hash.toLowerCase();
+      const mapped = HASH_TO_TAB[h];
+      if (mapped && mapped !== appStateRef.current) {
+        isHandlingPopStateRef.current = true;
+        setAppState(mapped);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  const handleExitWebsite = () => {
+    isAllowExitRef.current = true;
+    setIsExitConfirmOpen(false);
+    window.history.back();
+    setTimeout(() => {
+      try {
+        window.close();
+      } catch (e) {}
+    }, 150);
   };
 
   return (
@@ -2042,6 +2241,7 @@ export default function App() {
                   handleUpdateProfile({ resumeText: newText });
                 }}
                 targetRoleTitle={currentProfile.enrolledRoadmapRole || targetRole || 'Data Scientist'}
+                onBackToHome={() => setAppState('upload')}
               />
             </motion.div>
           )}
@@ -2536,6 +2736,14 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Native Android Chrome Home Exit Confirmation Prompt */}
+      <ExitConfirmationModal
+        isOpen={isExitConfirmOpen}
+        onStay={() => setIsExitConfirmOpen(false)}
+        onExit={handleExitWebsite}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }
