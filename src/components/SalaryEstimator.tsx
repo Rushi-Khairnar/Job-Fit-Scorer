@@ -161,18 +161,23 @@ export const SalaryEstimator: React.FC<SalaryEstimatorProps> = ({
             <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
               Display Currency:
             </span>
-            <div className="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-2xl border border-neutral-200 dark:border-neutral-700">
+            <div className="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-2xl border border-neutral-200 dark:border-neutral-700 max-w-full overflow-x-auto no-scrollbar">
               {(['INR', 'USD', 'EUR', 'GBP'] as CurrencyType[]).map((curr) => (
                 <button
                   key={curr}
                   onClick={() => setCurrency(curr)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                     currency === curr
                       ? 'bg-amber-500 text-white shadow-xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
-                  {curr === 'INR' ? '₹ INR (Lakhs)' : curr === 'USD' ? '$ USD' : curr === 'EUR' ? '€ EUR' : '£ GBP'}
+                  <span className="hidden sm:inline">
+                    {curr === 'INR' ? '₹ INR (Lakhs)' : curr === 'USD' ? '$ USD' : curr === 'EUR' ? '€ EUR' : '£ GBP'}
+                  </span>
+                  <span className="sm:hidden">
+                    {curr === 'INR' ? '₹ INR' : curr === 'USD' ? '$ USD' : curr === 'EUR' ? '€ EUR' : '£ GBP'}
+                  </span>
                 </button>
               ))}
             </div>

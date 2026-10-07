@@ -593,11 +593,12 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Edit / Preview Toggle */}
           <div className="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700">
             <button
               onClick={() => setActiveTab('editor')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all cursor-pointer min-h-[38px] ${
                 activeTab === 'editor' 
                   ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs' 
                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
@@ -607,7 +608,7 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
             </button>
             <button
               onClick={() => setActiveTab('preview')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center transition-all cursor-pointer min-h-[38px] ${
                 activeTab === 'preview' 
                   ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs' 
                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
@@ -622,7 +623,7 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
             type="button"
             onClick={(e) => handleDownloadWord(e)}
             disabled={isGeneratingWord}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white shadow-sm shadow-blue-700/20 transition-all flex items-center cursor-pointer"
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white shadow-sm shadow-blue-700/20 transition-all flex items-center cursor-pointer min-h-[38px] active:scale-95"
             title="Download formatted Microsoft Word document (.docx)"
           >
             {isGeneratingWord ? (
@@ -643,7 +644,7 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
             type="button"
             onClick={(e) => handleDownloadPdf(e)}
             disabled={isGeneratingPdf}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white shadow-sm shadow-emerald-600/20 transition-all flex items-center cursor-pointer"
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white shadow-sm shadow-emerald-600/20 transition-all flex items-center cursor-pointer min-h-[38px] active:scale-95"
             title="Download print-ready PDF file (.pdf)"
           >
             {isGeneratingPdf ? (
@@ -663,8 +664,9 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
           <button
             type="button"
             onClick={(e) => handlePrint(e)}
-            className="p-2 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors flex items-center cursor-pointer"
+            className="p-2 min-h-[38px] min-w-[38px] rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors flex items-center justify-center cursor-pointer"
             title="Open browser print dialog"
+            aria-label="Print resume"
           >
             <Printer className="w-4 h-4" />
           </button>
@@ -674,21 +676,11 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
             <button
               type="button"
               onClick={onOpenAtsDiagnostics}
-              className="px-3 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center cursor-pointer"
+              className="px-3 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center cursor-pointer min-h-[38px] active:scale-95"
               title="Audit resume against ATS parser simulation"
             >
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-              <span>ATS Diagnostics</span>
-            </button>
-          )}
-
-          {(onBack || onBackToHome) && (
-            <button
-              type="button"
-              onClick={handleBack}
-              className="text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:text-blue-600 dark:hover:text-blue-400 ml-1 px-3 py-1.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 transition-colors flex items-center cursor-pointer"
-            >
-              <span>{backButtonLabel || '← Back to Job Matches'}</span>
+              <span>ATS Audit</span>
             </button>
           )}
         </div>
@@ -946,11 +938,11 @@ ${educations.map(ed => `### ${ed.degree} - ${ed.institution} (${ed.year})\n${ed.
 
         {/* Right Column: Live ATS-Compliant Sheet Preview */}
         <div className={`lg:col-span-6 sticky top-24 ${activeTab === 'editor' ? 'hidden lg:block' : 'block'}`}>
-          <div className="bg-neutral-200 dark:bg-neutral-900/80 p-4 md:p-8 rounded-3xl border border-neutral-300 dark:border-neutral-800 overflow-hidden shadow-inner">
+          <div className="bg-neutral-200 dark:bg-neutral-900/80 p-2 sm:p-4 md:p-8 rounded-2xl sm:rounded-3xl border border-neutral-300 dark:border-neutral-800 overflow-x-auto shadow-inner">
             {/* The Print Sheet Target */}
             <div 
               id="resume-print-sheet" 
-              className="bg-white text-neutral-900 p-8 md:p-10 rounded-2xl shadow-xl max-w-[800px] mx-auto min-h-[1050px] font-sans text-neutral-900 select-text"
+              className="bg-white text-neutral-900 p-4 sm:p-8 md:p-10 rounded-xl sm:rounded-2xl shadow-xl max-w-[800px] mx-auto min-h-[500px] sm:min-h-[900px] font-sans text-neutral-900 select-text"
             >
               {/* Header */}
               <div className="border-b-2 border-neutral-900 pb-5 mb-5">

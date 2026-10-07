@@ -307,12 +307,12 @@ export const ApplicationTracker: React.FC<{
             Application Pipeline
           </h3>
 
-          <div className="flex flex-wrap gap-1 text-xs">
+          <div className="flex overflow-x-auto sm:flex-wrap gap-1 text-xs no-scrollbar pb-1 sm:pb-0">
             {['All', 'Applied', 'Screening', 'Technical', 'Final Round', 'Offer', 'Rejected'].map(st => (
               <button
                 key={st}
                 onClick={() => setFilterStatus(st)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   filterStatus === st 
                     ? 'bg-blue-600 text-white shadow-xs' 
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'
@@ -324,7 +324,67 @@ export const ApplicationTracker: React.FC<{
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Responsive Cards View for Android Chrome */}
+        <div className="md:hidden divide-y divide-neutral-100 dark:divide-neutral-700/60">
+          {filteredApps.length === 0 ? (
+            <div className="p-8 text-center text-xs text-neutral-500 dark:text-neutral-400">
+              No applications match this filter stage.
+            </div>
+          ) : (
+            filteredApps.map((app) => (
+              <div key={app.id} className="p-4 space-y-3 bg-white dark:bg-neutral-800">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate">
+                      {app.company}
+                    </h4>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                      {app.role} {app.salaryTarget && `• ${app.salaryTarget}`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(app.id)}
+                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400 hover:text-rose-500 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                    title="Delete Application"
+                    aria-label="Delete Application"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md font-bold text-xs ${
+                    app.matchScore >= 85 
+                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300' 
+                      : 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300'
+                  }`}>
+                    {app.matchScore}% Match
+                  </span>
+
+                  <select
+                    value={app.status}
+                    onChange={(e) => handleStatusChange(app.id, e.target.value as AppStatus)}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border min-h-[40px] ${getStatusBadge(app.status)}`}
+                  >
+                    {(['Saved', 'Applied', 'Screening', 'Technical', 'Final Round', 'Offer', 'Rejected'] as AppStatus[]).map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {(app.notes || app.dateApplied) && (
+                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-700/40">
+                    <span className="truncate max-w-[65%]">{app.notes || 'No extra notes'}</span>
+                    <span className="shrink-0">{app.dateApplied}</span>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-50 dark:bg-neutral-900/60 border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-semibold uppercase tracking-wider">
               <tr>
@@ -381,8 +441,9 @@ export const ApplicationTracker: React.FC<{
                   <td className="py-4 px-4 text-right">
                     <button
                       onClick={() => handleDelete(app.id)}
-                      className="p-1.5 text-neutral-400 hover:text-rose-500 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      className="p-1.5 text-neutral-400 hover:text-rose-500 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                       title="Delete Application"
+                      aria-label="Delete Application"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

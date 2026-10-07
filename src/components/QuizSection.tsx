@@ -131,14 +131,14 @@ export const QuizSection: React.FC<QuizSectionProps> = ({
         </div>
 
         {/* Quiz Track Pills Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+        <div className="flex sm:grid overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 gap-2.5 sm:grid-cols-2 lg:grid-cols-5 no-scrollbar">
           {QUIZ_COLLECTION.map(quiz => {
             const isSelected = quiz.id === selectedQuiz.id;
             return (
               <button
                 key={quiz.id}
                 onClick={() => handleRestart(quiz)}
-                className={`p-3 rounded-2xl border text-left transition-all ${
+                className={`min-w-[165px] sm:min-w-0 shrink-0 sm:shrink p-3 rounded-2xl border text-left transition-all cursor-pointer active:scale-98 ${
                   isSelected 
                     ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/50 shadow-xs ring-2 ring-blue-500/20' 
                     : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-800/60'

@@ -231,7 +231,82 @@ export const BulkResumeRanker: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Responsive Cards for Android Chrome */}
+        <div className="md:hidden divide-y divide-neutral-100 dark:divide-neutral-700/60">
+          {filteredCandidates.map((cand, idx) => {
+            const overall = cand.scores?.overall || 0;
+            return (
+              <div key={cand.id} className="p-4 space-y-3 bg-white dark:bg-neutral-800">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                    <span className={`inline-flex w-6 h-6 rounded-full items-center justify-center text-xs font-black shrink-0 ${
+                      idx === 0 
+                        ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300' 
+                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300'
+                    }`}>
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate">
+                        {cand.name}
+                      </h4>
+                      <p className="text-xs text-neutral-400 line-clamp-1">
+                        {cand.notes}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveCandidate(cand.id)}
+                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400 hover:text-rose-500 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                    title="Remove Candidate"
+                    aria-label="Remove Candidate"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <div className="flex items-center space-x-2 flex-1">
+                    <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${overall >= 80 ? 'bg-emerald-500' : overall >= 60 ? 'bg-blue-500' : 'bg-amber-500'}`}
+                        style={{ width: `${overall}%` }}
+                      />
+                    </div>
+                    <span className={`text-sm font-black shrink-0 ${
+                      overall >= 80 ? 'text-emerald-600 dark:text-emerald-400' : overall >= 60 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600'
+                    }`}>
+                      {overall}%
+                    </span>
+                  </div>
+
+                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400 shrink-0">
+                    <span className="font-semibold text-blue-600 dark:text-blue-400">{cand.scores?.semantic}%</span> smart · <span className="font-semibold">{cand.scores?.base}%</span> exact
+                  </div>
+                </div>
+
+                {/* Matching Skills */}
+                {cand.scores?.matchingSkills && cand.scores.matchingSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {cand.scores.matchingSkills.slice(0, 4).map(s => (
+                      <span key={s} className="px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold border border-emerald-200 dark:border-emerald-800">
+                        ✓ {s}
+                      </span>
+                    ))}
+                    {cand.scores.matchingSkills.length > 4 && (
+                      <span className="text-[10px] text-neutral-400 self-center">
+                        +{cand.scores.matchingSkills.length - 4}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop View Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-50 dark:bg-neutral-900/60 border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-semibold uppercase tracking-wider">
               <tr>
@@ -318,8 +393,9 @@ export const BulkResumeRanker: React.FC = () => {
                     <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => handleRemoveCandidate(cand.id)}
-                        className="p-1.5 text-neutral-400 hover:text-rose-500 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="p-1.5 text-neutral-400 hover:text-rose-500 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                         title="Remove Candidate"
+                        aria-label="Remove Candidate"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

@@ -187,20 +187,20 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
       <div 
-        className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl p-6 md:p-8 space-y-6"
+        className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[90dvh] overflow-y-auto overscroll-contain shadow-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <User className="w-5 h-5" />
+        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 sm:pb-4">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <User className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Career Profile & Vault</h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <h3 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">Career Profile & Vault</h3>
+              <p className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400">
                 Multi-account career isolation with PDF resume & profile data.
               </p>
             </div>
@@ -208,7 +208,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <button 
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -389,7 +389,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     placeholder="e.g. Software Engineer, CS Student, Freelancer"
                     value={newOccupation}
                     onChange={(e) => setNewOccupation(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl text-base sm:text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                   />
                 </div>
 
@@ -403,7 +403,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     placeholder="e.g. rao.varma@example.com"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl text-base sm:text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                   />
                 </div>
 
@@ -414,7 +414,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   <select
                     value={newExperienceYears}
                     onChange={(e) => setNewExperienceYears(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl text-base sm:text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                   >
                     <option value={0}>0 Years (Entry Level / Student / Fresher)</option>
                     <option value={1}>1 Year of Experience</option>
@@ -438,7 +438,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   placeholder="e.g. Full Stack Developer, Data Scientist"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl text-base sm:text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                 />
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <span className="text-[10px] text-neutral-400 font-medium self-center">Popular:</span>

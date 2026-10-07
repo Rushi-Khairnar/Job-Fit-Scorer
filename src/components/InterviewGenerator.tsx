@@ -177,12 +177,12 @@ export const InterviewGenerator: React.FC<{
 
         {/* Search & Category Filter Bar */}
         <div className="mt-6 pt-6 border-t border-neutral-100 dark:border-neutral-700 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto">
+          <div className="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto no-scrollbar pb-1 sm:pb-0">
             {(['All', 'Technical', 'System Design', 'Behavioral'] as const).map(cat => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 min-h-[36px] ${
                   activeCategory === cat
                     ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'

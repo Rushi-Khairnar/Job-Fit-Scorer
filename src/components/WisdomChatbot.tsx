@@ -203,11 +203,11 @@ export const WisdomChatbot: React.FC<WisdomChatbotProps> = ({
   return (
     <>
       {/* Floating Launcher Button */}
-      <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-40">
+      <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] md:bottom-6 right-3 sm:right-6 z-40">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`group flex items-center space-x-2.5 px-4 py-3 rounded-2xl shadow-xl transition-all duration-200 cursor-pointer min-h-[48px] ${
+          className={`group flex items-center space-x-2 sm:space-x-2.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl shadow-xl transition-all duration-200 cursor-pointer min-h-[48px] active:scale-95 ${
             isOpen
               ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 ring-4 ring-neutral-300 dark:ring-neutral-700'
               : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:shadow-2xl ring-2 ring-blue-400/30'
@@ -237,14 +237,14 @@ export const WisdomChatbot: React.FC<WisdomChatbotProps> = ({
       {/* Expandable Chat Drawer Window */}
       {isOpen && (
         <div 
-          className="fixed bottom-36 md:bottom-20 right-4 sm:right-6 z-50 w-[94vw] sm:w-[400px] max-w-[420px] h-[540px] max-h-[76vh] bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200"
+          className="fixed inset-x-2 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:inset-x-auto sm:right-6 sm:bottom-20 z-50 w-auto sm:w-[400px] sm:max-w-[420px] h-[520px] max-h-[72dvh] bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200"
           role="dialog"
           aria-label="Wisdom Career Copilot Chat Window"
         >
           {/* Header */}
-          <div className="p-4 bg-neutral-50 dark:bg-neutral-800/80 border-b border-neutral-200 dark:border-neutral-700/80 flex items-center justify-between shrink-0">
+          <div className="p-3.5 sm:p-4 bg-neutral-50 dark:bg-neutral-800/80 border-b border-neutral-200 dark:border-neutral-700/80 flex items-center justify-between shrink-0">
             <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-xs shrink-0">
                 <Bot className="w-5 h-5" />
               </div>
               <div>
@@ -254,7 +254,7 @@ export const WisdomChatbot: React.FC<WisdomChatbotProps> = ({
                     AI Assistant
                   </span>
                 </div>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[200px]">
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[170px] sm:max-w-[200px]">
                   {currentProfile.name.split(' ')[0]} · {currentProfile.title || targetRole}
                 </p>
               </div>
@@ -264,16 +264,16 @@ export const WisdomChatbot: React.FC<WisdomChatbotProps> = ({
               <button
                 type="button"
                 onClick={handleResetChat}
-                className="p-2 rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
                 title="Restart conversation"
                 aria-label="Restart conversation"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-2 rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
                 title="Close chat window"
                 aria-label="Close chat window"
               >
@@ -346,7 +346,7 @@ export const WisdomChatbot: React.FC<WisdomChatbotProps> = ({
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-3 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 flex items-center space-x-2 shrink-0"
+            className="p-3 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 flex items-center space-x-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]"
           >
             <input
               ref={inputRef}
@@ -355,12 +355,12 @@ export const WisdomChatbot: React.FC<WisdomChatbotProps> = ({
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask Wisdom anything..."
               disabled={isLoading}
-              className="flex-1 px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+              className="flex-1 px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-base sm:text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 min-h-[44px]"
             />
             <button
               type="submit"
               disabled={!inputValue.trim() || isLoading}
-              className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-200 dark:disabled:bg-neutral-800 text-white disabled:text-neutral-400 transition-all cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0"
+              className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-200 dark:disabled:bg-neutral-800 text-white disabled:text-neutral-400 transition-all cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0 active:scale-95"
               title="Send message"
               aria-label="Send message"
             >

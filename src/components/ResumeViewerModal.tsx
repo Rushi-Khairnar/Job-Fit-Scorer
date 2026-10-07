@@ -124,29 +124,29 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className={`bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
+        className={`bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
           isFullscreen 
-            ? 'w-[98vw] h-[96vh]' 
-            : 'w-full max-w-4xl h-[88vh]'
+            ? 'w-[98vw] h-[96dvh]' 
+            : 'w-full max-w-4xl h-[92dvh] sm:h-[88vh]'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
-          <div className="flex items-center space-x-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
-              <FileText className="w-5 h-5" />
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
+          <div className="flex items-center space-x-2.5 sm:space-x-3 overflow-hidden">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="truncate">
               <div className="flex items-center space-x-2">
-                <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white truncate">
+                <h3 className="text-sm sm:text-lg font-bold text-neutral-900 dark:text-white truncate">
                   {fileName}
                 </h3>
-                <span className="text-[11px] text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-md font-medium">
-                  {isPdf ? 'PDF Document' : 'Document Text'}
+                <span className="text-[10px] sm:text-[11px] text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-md font-medium hidden xs:inline-block">
+                  {isPdf ? 'PDF' : 'Text'}
                 </span>
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+              <p className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate">
                 {detectedSkills.length > 0 
                   ? `${detectedSkills.length} extracted skills identified` 
                   : 'Document loaded from profile vault'}
@@ -154,17 +154,17 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center space-x-1.5">
+          <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
-              className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               title={isFullscreen ? "Exit Fullscreen" : "Fullscreen View"}
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
@@ -173,13 +173,13 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
         </div>
 
         {/* Toolbar / Tabs Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-2.5 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/30 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/30 text-xs shrink-0">
           {/* View Mode Tabs */}
           <div className="flex items-center space-x-1 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-xl">
             {fileUrl && isPdf && (
               <button
                 onClick={() => setActiveTab('pdf')}
-                className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer flex items-center space-x-1.5 ${
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer flex items-center space-x-1.5 min-h-[36px] ${
                   activeTab === 'pdf'
                     ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
@@ -191,14 +191,14 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
             )}
             <button
               onClick={() => setActiveTab('text')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer flex items-center space-x-1.5 min-h-[36px] ${
                 activeTab === 'text'
                   ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Extracted Text Reader</span>
+              <span>Extracted Text</span>
             </button>
           </div>
 
@@ -212,7 +212,7 @@ export const ResumeViewerModal: React.FC<ResumeViewerModalProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Find in document..."
-                  className="w-full pl-8 pr-16 py-1 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs text-neutral-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-8 pr-16 py-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-base sm:text-xs text-neutral-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 min-h-[40px]"
                 />
                 {searchQuery && (
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-semibold">

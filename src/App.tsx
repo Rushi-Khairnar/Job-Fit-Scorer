@@ -967,18 +967,22 @@ export default function App() {
 
       {/* Primary Top Navbar */}
       <header className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-neutral-200/90 dark:border-neutral-800 sticky top-0 z-40 shadow-2xs transition-colors duration-200 print:hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <div 
-            className="flex items-center space-x-2.5 cursor-pointer select-none" 
+            className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer select-none" 
             onClick={() => setAppState('upload')}
           >
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-xs">
-              <Network className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center shrink-0 shadow-xs">
+              <Network className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-neutral-950 dark:text-white leading-tight">JobFit Studio</span>
-              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider">Career Intelligence Suite</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-base sm:text-lg font-bold tracking-tight text-neutral-950 dark:text-white leading-tight truncate">
+                JobFit<span className="hidden xs:inline"> Studio</span>
+              </span>
+              <span className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider hidden sm:inline truncate">
+                Career Intelligence Suite
+              </span>
             </div>
           </div>
 
@@ -1250,18 +1254,18 @@ export default function App() {
           </div>
 
           {/* Right Header Actions */}
-          <div className="flex items-center space-x-1.5 sm:space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
             {/* Android / Desktop PWA Install Button */}
             {deferredPrompt && (
               <button
                 type="button"
                 onClick={handleInstallPwa}
-                className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 flex items-center transition-all cursor-pointer min-h-[38px]"
+                className="px-2 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 flex items-center transition-all cursor-pointer min-h-[44px] active:scale-95"
                 title="Install Android App to your Home Screen"
               >
-                <Smartphone className="w-3.5 h-3.5 mr-1 text-emerald-600 dark:text-emerald-400" />
+                <Smartphone className="w-3.5 h-3.5 sm:mr-1 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="hidden sm:inline">Install App</span>
-                <span className="sm:hidden">Install</span>
+                <span className="sm:hidden text-[10px] font-bold">Install</span>
               </button>
             )}
 
@@ -1269,19 +1273,19 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsAccountModalOpen(true)}
-              className="px-3 py-1.5 min-h-[38px] rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 flex items-center space-x-1.5 transition-all cursor-pointer"
+              className="px-2.5 sm:px-3 py-1.5 min-h-[44px] rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 flex items-center space-x-1.5 transition-all cursor-pointer active:scale-95"
               title="Career Vault & Saved Resumes"
             >
-              <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span className="hidden sm:inline">{currentProfile.name.split(' ')[0]}</span>
-              <span className="sm:hidden">Account</span>
+              <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="hidden sm:inline truncate max-w-[100px]">{currentProfile.name.split(' ')[0]}</span>
+              <span className="sm:hidden text-[11px] font-semibold">Vault</span>
             </button>
 
             {/* Dark Mode Toggle */}
             <button 
               type="button"
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 min-h-[38px] min-w-[38px] rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              className="p-2 min-h-[44px] min-w-[44px] rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer active:scale-95"
               aria-label="Toggle theme"
               title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
@@ -1291,8 +1295,8 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-24 md:pb-12">
+      {/* Main Container with Android gesture area padding */}
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 pt-3 sm:pt-6 pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] md:pb-16">
         <AnimatePresence mode="wait">
           {/* UPLOAD & MANUAL ENTRY VIEW */}
           {appState === 'upload' && (
@@ -1301,18 +1305,18 @@ export default function App() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="space-y-10"
+              className="space-y-6 sm:space-y-10"
             >
               {/* Hero Banner */}
-              <div className="text-center max-w-3xl mx-auto space-y-3 pt-4">
+              <div className="text-center max-w-3xl mx-auto space-y-2.5 sm:space-y-3 pt-2 sm:pt-4 px-2">
                 <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-xs font-semibold mb-1 border border-blue-200 dark:border-blue-800">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Interactive Career Platform</span>
                 </div>
-                <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-neutral-950 dark:text-white leading-tight">
+                <h1 className="text-2xl sm:text-5xl font-black tracking-tight text-neutral-950 dark:text-white leading-tight">
                   Find Your Perfect Job Fit
                 </h1>
-                <p className="text-base text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+                <p className="text-xs sm:text-base text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
                   Upload your resume or pick your skills to see where you stand, practice 10-question quizzes, prepare for interviews, and build recruiter-ready resumes in Word and PDF.
                 </p>
               </div>
@@ -1505,22 +1509,23 @@ export default function App() {
 
                     {uploadedFileName && (
                       <div className="p-4 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 text-xs font-semibold text-blue-900 dark:text-blue-200">
-                            <FileText className="w-4 h-4 text-blue-600" />
-                            <span>Active Resume: <strong>{uploadedFileName}</strong></span>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-center space-x-2 text-xs font-semibold text-blue-900 dark:text-blue-200 min-w-0">
+                            <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                            <span className="truncate">Active Resume: <strong>{uploadedFileName}</strong></span>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 shrink-0">
                             <button
                               type="button"
                               onClick={() => setIsResumeViewerOpen(true)}
-                              className="text-xs text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-100 dark:bg-blue-900/60 hover:bg-blue-200 dark:hover:bg-blue-800 px-2.5 py-1 rounded-lg transition-colors flex items-center cursor-pointer font-semibold"
+                              className="text-xs text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-100 dark:bg-blue-900/60 hover:bg-blue-200 dark:hover:bg-blue-800 px-3 py-1.5 rounded-lg transition-colors flex items-center cursor-pointer font-semibold min-h-[38px] active:scale-95"
                             >
-                              <Eye className="w-3.5 h-3.5 mr-1" /> View / Read Resume
+                              <Eye className="w-3.5 h-3.5 mr-1" /> View / Read
                             </button>
                             <button
+                              type="button"
                               onClick={handleCancelUpload}
-                              className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2 py-1 rounded-lg transition-colors flex items-center cursor-pointer"
+                              className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2.5 py-1.5 rounded-lg transition-colors flex items-center cursor-pointer min-h-[38px] active:scale-95"
                             >
                               <Trash2 className="w-3.5 h-3.5 mr-1" /> Remove
                             </button>
@@ -1543,8 +1548,9 @@ export default function App() {
                         )}
 
                         <button 
+                          type="button"
                           onClick={handleProcessInput}
-                          className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-md shadow-blue-600/20 text-xs flex items-center justify-center cursor-pointer"
+                          className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-md shadow-blue-600/20 text-xs sm:text-sm flex items-center justify-center cursor-pointer min-h-[48px] active:scale-98"
                         >
                           <Sparkles className="w-4 h-4 mr-2" />
                           Run Match Analysis Against 10+ Tech Roles
@@ -1563,24 +1569,33 @@ export default function App() {
                       {/* Search Bar */}
                       <div className="relative">
                         <div className="flex items-center bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2.5">
-                          <Search className="w-4 h-4 text-neutral-400 mr-2" />
+                          <Search className="w-4 h-4 text-neutral-400 mr-2 shrink-0" />
                           <input 
                             type="text" 
-                            placeholder="Search and add any skill (e.g. Python, SQL, React, AWS, Docker)..." 
+                            placeholder="Search & add skills (e.g. Python, SQL, React, AWS)..." 
                             value={skillSearch}
                             onChange={(e) => setSkillSearch(e.target.value)}
                             onFocus={() => setIsSkillDropdownOpen(true)}
-                            className="bg-transparent flex-1 text-xs text-neutral-900 dark:text-white outline-none"
+                            className="bg-transparent flex-1 text-xs text-neutral-900 dark:text-white outline-none w-full"
                           />
+                          {skillSearch && (
+                            <button
+                              type="button"
+                              onClick={() => setSkillSearch('')}
+                              className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
 
                         {isSkillDropdownOpen && filteredSkills.length > 0 && (
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-xl max-h-56 overflow-y-auto z-30 p-2">
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-xl max-h-56 overflow-y-auto z-30 p-2 touch-scroll">
                             {filteredSkills.slice(0, 12).map(skill => (
                               <button 
                                 key={skill}
                                 onClick={() => handleAddSkill(skill)}
-                                className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl text-neutral-900 dark:text-white flex items-center justify-between cursor-pointer"
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl text-neutral-900 dark:text-white flex items-center justify-between cursor-pointer min-h-[40px]"
                               >
                                 <span className="font-semibold">{skill}</span>
                                 <span className="text-[10px] text-neutral-400">Add to Profile</span>
@@ -1595,9 +1610,9 @@ export default function App() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                          Selected Skills with Proficiency Levels ({selectedSkills.length}):
+                          Selected Skills with Levels ({selectedSkills.length}):
                         </span>
-                        <span className="text-[11px] text-neutral-400">Click a level to adjust fit</span>
+                        <span className="text-[11px] text-neutral-400 hidden xs:inline">Tap level to adjust</span>
                       </div>
 
                       {selectedSkills.length > 0 ? (
@@ -1615,7 +1630,7 @@ export default function App() {
                                   </span>
                                   <button
                                     onClick={() => handleRemoveSkill(skill)}
-                                    className="p-1 rounded-md text-neutral-400 hover:text-rose-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                                    className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center cursor-pointer active:scale-95"
                                     title="Remove skill"
                                   >
                                     <X className="w-3.5 h-3.5" />
@@ -1623,7 +1638,7 @@ export default function App() {
                                 </div>
 
                                 {/* Clickable Beginner, Intermediate, Advanced Chips */}
-                                <div className="flex items-center space-x-1.5 pt-1">
+                                <div className="flex items-center space-x-1 sm:space-x-1.5 pt-1">
                                   {(['Beginner', 'Intermediate', 'Advanced'] as const).map(lvl => {
                                     const isChosen = currentLvl === lvl;
                                     let chipStyle = "bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800";
@@ -1637,7 +1652,7 @@ export default function App() {
                                         key={lvl}
                                         type="button"
                                         onClick={() => handleSetSkillLevel(skill, lvl)}
-                                        className={`px-2 py-1 rounded-lg text-[10px] border transition-all cursor-pointer flex-1 flex items-center justify-center space-x-1 ${chipStyle}`}
+                                        className={`px-1.5 sm:px-2 py-1.5 rounded-lg text-[10px] border transition-all cursor-pointer flex-1 flex items-center justify-center space-x-1 min-h-[34px] active:scale-95 ${chipStyle}`}
                                       >
                                         {isChosen && <Check className="w-2.5 h-2.5" />}
                                         <span>{lvl}</span>
@@ -1894,7 +1909,7 @@ export default function App() {
               className="space-y-8"
             >
               {/* Results Top Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-6 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-2xs">
                 <div>
                   <div className="flex items-center space-x-2 mb-1">
                     <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
@@ -1905,37 +1920,37 @@ export default function App() {
                       {analyzedJobs.length} Positions Evaluated
                     </span>
                   </div>
-                  <h2 className="text-2xl font-bold text-neutral-950 dark:text-white">
+                  <h2 className="text-xl sm:text-2xl font-bold text-neutral-950 dark:text-white">
                     Your Job Match Breakdown
                   </h2>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   {(uploadedFileName || currentProfile.resumeFileName) && (
                     <button
                       type="button"
                       onClick={() => setIsResumeViewerOpen(true)}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 flex items-center transition-all cursor-pointer shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 flex items-center transition-all cursor-pointer shadow-2xs min-h-[36px] active:scale-95"
                     >
                       <Eye className="w-3.5 h-3.5 mr-1.5" />
-                      <span>View CV Document</span>
+                      <span>View CV</span>
                     </button>
                   )}
 
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-semibold text-neutral-500">Sort By:</span>
-                    <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-xs font-semibold text-neutral-500 hidden xs:inline">Sort:</span>
+                    <div className="flex bg-neutral-100 dark:bg-neutral-800 p-0.5 sm:p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs">
                       {(['semantic', 'base', 'gaps'] as const).map((s) => (
                         <button
                           key={s}
                           onClick={() => setResultsSortBy(s)}
-                          className={`px-3 py-1 rounded-lg font-bold capitalize transition-all cursor-pointer ${
+                          className={`px-2.5 sm:px-3 py-1 rounded-lg font-bold capitalize transition-all cursor-pointer min-h-[32px] text-[11px] sm:text-xs ${
                             resultsSortBy === s
                               ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
                               : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/60'
                           }`}
                         >
-                          {s === 'semantic' ? 'Smart Fit' : s === 'base' ? 'Exact Match' : 'Least Gaps'}
+                          {s === 'semantic' ? 'Smart' : s === 'base' ? 'Exact' : 'Gaps'}
                         </button>
                       ))}
                     </div>
@@ -2156,72 +2171,82 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Android & Mobile Fixed Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200/90 dark:border-neutral-800 pb-[env(safe-area-inset-bottom,0px)] shadow-lg print:hidden">
-        <div className="grid grid-cols-5 items-center h-16 px-1">
+      {/* Android & Mobile Fixed Bottom Navigation Bar (Optimized for Android Chrome & One-Handed Reach) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200/90 dark:border-neutral-800 pb-[max(0.35rem,env(safe-area-inset-bottom,0px))] pt-1 shadow-lg print:hidden select-none">
+        <div className="grid grid-cols-5 items-center h-14 px-1 gap-1">
           <button
             type="button"
-            onClick={() => setAppState('upload')}
-            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
-              appState === 'upload' || appState === 'loading'
-                ? 'text-blue-600 dark:text-blue-400 font-bold'
+            onClick={() => {
+              if (appState === 'results') setAppState('upload');
+              else if (analyzedJobs.length > 0 && appState === 'upload') setAppState('results');
+              else setAppState('upload');
+            }}
+            className={`relative flex flex-col items-center justify-center h-full min-h-[48px] py-1 px-0.5 rounded-xl transition-all active:scale-95 cursor-pointer ${
+              appState === 'upload' || appState === 'loading' || appState === 'results'
+                ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/50'
                 : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            <Network className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-tight">Match</span>
+            {appState === 'results' ? (
+              <BarChart className="w-4 h-4 mb-0.5" />
+            ) : (
+              <Network className="w-4 h-4 mb-0.5" />
+            )}
+            <span className="text-[10px] tracking-tight font-semibold truncate w-full text-center">
+              {appState === 'results' ? 'Matches' : 'Match'}
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => setAppState('ats-diagnostics')}
-            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+            className={`relative flex flex-col items-center justify-center h-full min-h-[48px] py-1 px-0.5 rounded-xl transition-all active:scale-95 cursor-pointer ${
               appState === 'ats-diagnostics'
-                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/50'
                 : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            <ShieldCheck className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-tight">ATS Suite</span>
+            <ShieldCheck className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px] tracking-tight font-semibold truncate w-full text-center">ATS Suite</span>
           </button>
 
           <button
             type="button"
             onClick={() => setAppState('job-directory')}
-            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+            className={`relative flex flex-col items-center justify-center h-full min-h-[48px] py-1 px-0.5 rounded-xl transition-all active:scale-95 cursor-pointer ${
               appState === 'job-directory'
-                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/50'
                 : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            <Compass className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-tight">Roadmaps</span>
+            <Compass className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px] tracking-tight font-semibold truncate w-full text-center">Roadmaps</span>
           </button>
 
           <button
             type="button"
             onClick={() => setAppState('interview-prep')}
-            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+            className={`relative flex flex-col items-center justify-center h-full min-h-[48px] py-1 px-0.5 rounded-xl transition-all active:scale-95 cursor-pointer ${
               appState === 'interview-prep'
-                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/50'
                 : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            <BrainCircuit className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-tight">Interview</span>
+            <BrainCircuit className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px] tracking-tight font-semibold truncate w-full text-center">Interview</span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsMobileToolsOpen(true)}
-            className={`flex flex-col items-center justify-center h-full min-h-[44px] transition-colors cursor-pointer ${
+            className={`relative flex flex-col items-center justify-center h-full min-h-[48px] py-1 px-0.5 rounded-xl transition-all active:scale-95 cursor-pointer ${
               isMobileToolsOpen || !['upload', 'loading', 'results', 'ats-diagnostics', 'job-directory', 'interview-prep'].includes(appState)
-                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/50'
                 : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            <LayoutGrid className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-tight">Tools</span>
+            <LayoutGrid className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px] tracking-tight font-semibold truncate w-full text-center">Tools</span>
           </button>
         </div>
       </nav>
@@ -2242,10 +2267,10 @@ export default function App() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="relative z-10 bg-white dark:bg-neutral-900 rounded-t-3xl border-t border-neutral-200 dark:border-neutral-800 p-5 space-y-4 max-h-[85vh] overflow-y-auto overscroll-contain shadow-2xl"
+              className="relative z-10 bg-white dark:bg-neutral-900 rounded-t-3xl border-t border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] space-y-4 max-h-[85dvh] overflow-y-auto overscroll-contain shadow-2xl touch-scroll"
             >
               {/* Grab Handle */}
-              <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto" />
+              <div className="w-10 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto" />
 
               <div className="flex items-center justify-between pt-1">
                 <div>
@@ -2253,13 +2278,13 @@ export default function App() {
                     Career Suite & Tools
                   </h3>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    Document generators, assessments, and interview prep
+                    Assessments, interview simulators, and resume builders
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsMobileToolsOpen(false)}
-                  className="p-2 min-h-[44px] min-w-[44px] rounded-full text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
+                  className="p-2 min-h-[44px] min-w-[44px] rounded-full text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center cursor-pointer active:scale-95"
                   aria-label="Close tools menu"
                 >
                   <X className="w-5 h-5" />
@@ -2268,18 +2293,18 @@ export default function App() {
 
               {/* Install PWA Prompt for Android */}
               {deferredPrompt && (
-                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-3">
+                <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-3">
                   <div className="flex items-center space-x-2.5">
                     <Smartphone className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <div>
                       <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200">Install Android App</div>
-                      <div className="text-[11px] text-emerald-700 dark:text-emerald-400">Add to home screen for full-screen offline use</div>
+                      <div className="text-[11px] text-emerald-700 dark:text-emerald-400">Add to home screen for fullscreen offline speed</div>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => { handleInstallPwa(); setIsMobileToolsOpen(false); }}
-                    className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 cursor-pointer shadow-xs"
+                    className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 cursor-pointer shadow-xs active:scale-95"
                   >
                     Install
                   </button>
@@ -2289,10 +2314,10 @@ export default function App() {
               {/* Profile & Account Vault Quick Access */}
               <div 
                 onClick={() => { setIsAccountModalOpen(true); setIsMobileToolsOpen(false); }}
-                className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex items-center justify-between cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/40 transition-colors"
+                className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex items-center justify-between cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/40 transition-colors active:scale-98"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                     <User className="w-5 h-5" />
                   </div>
                   <div>
@@ -2305,7 +2330,7 @@ export default function App() {
                       )}
                     </div>
                     <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                      {currentProfile.occupation || currentProfile.title} · {allProfiles.length} Account{allProfiles.length > 1 ? 's' : ''}
+                      {currentProfile.occupation || currentProfile.title} · Vault Profile
                     </div>
                   </div>
                 </div>
@@ -2315,121 +2340,197 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Tools List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                {[
-                  {
-                    id: 'ats-diagnostics',
-                    label: 'ATS Diagnostics (10-in-1)',
-                    sub: 'Parser simulator & impact scorer',
-                    icon: ShieldCheck,
-                    color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400',
-                    action: () => setAppState('ats-diagnostics')
-                  },
-                  {
-                    id: 'build-cv',
-                    label: 'Resume Builder',
-                    sub: '1-click Word (.docx) & PDF (.pdf)',
-                    icon: FileText,
-                    color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/60 dark:text-teal-400',
-                    action: () => handleOpenBuildCV(targetRole, extractedSkills)
-                  },
-                  {
-                    id: 'cover-letter',
-                    label: 'Cover Letter Writer',
-                    sub: 'Tailored letters for any tech role',
-                    icon: Send,
-                    color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/60 dark:text-cyan-400',
-                    action: () => setAppState('cover-letter')
-                  },
-                  {
-                    id: 'application-tracker',
-                    label: 'Application Tracker',
-                    sub: 'Pipeline, interviews & offers',
-                    icon: ClipboardList,
-                    color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400',
-                    action: () => setAppState('application-tracker')
-                  },
-                  {
-                    id: 'quizzes',
-                    label: 'Skill Quizzes (10 Questions Each)',
-                    sub: '10 skill categories with scoring',
-                    icon: HelpCircle,
-                    color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/60 dark:text-purple-400',
-                    action: () => setAppState('quizzes')
-                  },
-                  {
-                    id: 'interview-prep',
-                    label: 'Interview Practice',
-                    sub: 'Role STAR questions & answers',
-                    icon: BrainCircuit,
-                    color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400',
-                    action: () => setAppState('interview-prep')
-                  },
-                  {
-                    id: 'salary-estimator',
-                    label: 'Salary Calculator',
-                    sub: 'India metro hubs & global rates',
-                    icon: DollarSign,
-                    color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400',
-                    action: () => setAppState('salary-estimator')
-                  },
-                  {
-                    id: 'market-explorer',
-                    label: 'Market Explorer (Live)',
-                    sub: 'Live 2026 hiring trends & tech stack',
-                    icon: Globe,
-                    color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400',
-                    action: () => setAppState('market-explorer')
-                  },
-                  {
-                    id: 'culture-fit',
-                    label: 'Work Culture Fit',
-                    sub: 'Startup, Big Tech, or Remote',
-                    icon: HeartHandshake,
-                    color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/60 dark:text-pink-400',
-                    action: () => setAppState('culture-fit')
-                  },
-                  {
-                    id: 'bulk-ranker',
-                    label: 'Candidate Ranker',
-                    sub: 'Batch compare multiple resumes',
-                    icon: Users,
-                    color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/60 dark:text-violet-400',
-                    action: () => setAppState('bulk-ranker')
-                  },
-                  {
-                    id: 'profile-auditor',
-                    label: 'Profile Auditor',
-                    sub: 'GitHub projects & LinkedIn check',
-                    icon: ShieldCheck,
-                    color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400',
-                    action: () => setAppState('profile-auditor')
-                  }
-                ].map(tool => {
-                  const Icon = tool.icon;
-                  return (
-                    <button
-                      key={tool.id}
-                      type="button"
-                      onClick={() => { tool.action(); setIsMobileToolsOpen(false); }}
-                      className="w-full p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center space-x-3 text-left transition-colors cursor-pointer min-h-[48px]"
-                    >
-                      <div className={`p-2 rounded-xl shrink-0 ${tool.color}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                          {tool.label}
-                        </div>
-                        <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
-                          {tool.sub}
-                        </div>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                    </button>
-                  );
-                })}
+              {/* Categorized Tools List */}
+              <div className="space-y-4 pt-1">
+                {/* 1. Assess & Audit */}
+                <div>
+                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1 mb-1.5 block">
+                    Assess & Audit
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      {
+                        id: 'ats-diagnostics',
+                        label: 'ATS Diagnostics (10-in-1)',
+                        sub: 'Parser simulator & impact scorer',
+                        icon: ShieldCheck,
+                        color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400',
+                        action: () => setAppState('ats-diagnostics')
+                      },
+                      {
+                        id: 'profile-auditor',
+                        label: 'Profile Auditor',
+                        sub: 'GitHub projects & LinkedIn check',
+                        icon: ShieldCheck,
+                        color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400',
+                        action: () => setAppState('profile-auditor')
+                      },
+                      {
+                        id: 'culture-fit',
+                        label: 'Work Culture Fit',
+                        sub: 'Startup, Big Tech, or Remote',
+                        icon: HeartHandshake,
+                        color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/60 dark:text-pink-400',
+                        action: () => setAppState('culture-fit')
+                      }
+                    ].map(tool => {
+                      const Icon = tool.icon;
+                      return (
+                        <button
+                          key={tool.id}
+                          type="button"
+                          onClick={() => { tool.action(); setIsMobileToolsOpen(false); }}
+                          className="w-full p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center space-x-3 text-left transition-colors cursor-pointer min-h-[48px] active:scale-98"
+                        >
+                          <div className={`p-2 rounded-xl shrink-0 ${tool.color}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                              {tool.label}
+                            </div>
+                            <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                              {tool.sub}
+                            </div>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Practice & Benchmark */}
+                <div>
+                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1 mb-1.5 block">
+                    Practice & Benchmark
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      {
+                        id: 'interview-prep',
+                        label: 'Interview Practice',
+                        sub: 'STAR questions & model answers',
+                        icon: BrainCircuit,
+                        color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400',
+                        action: () => setAppState('interview-prep')
+                      },
+                      {
+                        id: 'quizzes',
+                        label: 'Skill Quizzes',
+                        sub: '10 skill categories with scoring',
+                        icon: HelpCircle,
+                        color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/60 dark:text-purple-400',
+                        action: () => setAppState('quizzes')
+                      },
+                      {
+                        id: 'salary-estimator',
+                        label: 'Salary Calculator',
+                        sub: 'India metro hubs & global rates',
+                        icon: DollarSign,
+                        color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400',
+                        action: () => setAppState('salary-estimator')
+                      },
+                      {
+                        id: 'market-explorer',
+                        label: 'Market Explorer (Live)',
+                        sub: 'Live 2026 hiring trends & tech stack',
+                        icon: Globe,
+                        color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400',
+                        action: () => setAppState('market-explorer')
+                      }
+                    ].map(tool => {
+                      const Icon = tool.icon;
+                      return (
+                        <button
+                          key={tool.id}
+                          type="button"
+                          onClick={() => { tool.action(); setIsMobileToolsOpen(false); }}
+                          className="w-full p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center space-x-3 text-left transition-colors cursor-pointer min-h-[48px] active:scale-98"
+                        >
+                          <div className={`p-2 rounded-xl shrink-0 ${tool.color}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                              {tool.label}
+                            </div>
+                            <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                              {tool.sub}
+                            </div>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Documents & Pipeline */}
+                <div>
+                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1 mb-1.5 block">
+                    Documents & Pipeline
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      {
+                        id: 'build-cv',
+                        label: 'Resume Builder',
+                        sub: 'Word (.docx) & PDF exports',
+                        icon: FileText,
+                        color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/60 dark:text-teal-400',
+                        action: () => handleOpenBuildCV(targetRole, extractedSkills)
+                      },
+                      {
+                        id: 'cover-letter',
+                        label: 'Cover Letter Writer',
+                        sub: 'Tailored letters for tech roles',
+                        icon: Send,
+                        color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/60 dark:text-cyan-400',
+                        action: () => setAppState('cover-letter')
+                      },
+                      {
+                        id: 'application-tracker',
+                        label: 'Application Tracker',
+                        sub: 'Pipeline, interviews & offers',
+                        icon: ClipboardList,
+                        color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400',
+                        action: () => setAppState('application-tracker')
+                      },
+                      {
+                        id: 'bulk-ranker',
+                        label: 'Candidate Ranker',
+                        sub: 'Batch compare multiple resumes',
+                        icon: Users,
+                        color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/60 dark:text-violet-400',
+                        action: () => setAppState('bulk-ranker')
+                      }
+                    ].map(tool => {
+                      const Icon = tool.icon;
+                      return (
+                        <button
+                          key={tool.id}
+                          type="button"
+                          onClick={() => { tool.action(); setIsMobileToolsOpen(false); }}
+                          className="w-full p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center space-x-3 text-left transition-colors cursor-pointer min-h-[48px] active:scale-98"
+                        >
+                          <div className={`p-2 rounded-xl shrink-0 ${tool.color}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                              {tool.label}
+                            </div>
+                            <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                              {tool.sub}
+                            </div>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>

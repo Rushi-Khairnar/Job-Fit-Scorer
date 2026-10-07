@@ -354,16 +354,16 @@ B.S. in Computer Science & Engineering`;
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-2">
       {/* Executive Clean Header */}
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 sm:p-7 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
               <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               <span>Enterprise Diagnostics & ATS Intelligence</span>
               <span aria-hidden="true">·</span>
-              <span className="text-neutral-400">Target Role: {targetRoleTitle}</span>
+              <span className="text-neutral-400 truncate">Target: {targetRoleTitle}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
               Resume Diagnostics & Optimization Suite
             </h1>
             <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
@@ -372,7 +372,7 @@ B.S. in Computer Science & Engineering`;
           </div>
 
           {/* Unboxed Tabular Health Vitals */}
-          <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-8 pt-4 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-neutral-800 shrink-0 overflow-x-auto">
+          <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-8 pt-4 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-neutral-800 shrink-0 overflow-x-auto touch-scroll scrollbar-none pb-1">
             <div>
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-0.5">
                 ATS Fidelity
@@ -441,7 +441,7 @@ B.S. in Computer Science & Engineering`;
                     setActiveTab(stage.tools[0].id);
                   }
                 }}
-                className={`p-3.5 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 sm:p-3.5 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between active:scale-98 ${
                   isStageActive
                     ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs border border-neutral-200/80 dark:border-neutral-700'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-neutral-800'
@@ -467,7 +467,7 @@ B.S. in Computer Science & Engineering`;
         </div>
 
         {/* Sub-Tool Navigation Strip */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-neutral-200 dark:border-neutral-800 scrollbar-none">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-neutral-200 dark:border-neutral-800 scrollbar-none touch-scroll">
           {STAGES.find(s => s.id === currentStage)?.tools.map(tool => {
             const Icon = tool.icon;
             const isToolActive = activeTab === tool.id;

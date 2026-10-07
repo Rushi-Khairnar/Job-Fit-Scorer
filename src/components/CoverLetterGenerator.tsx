@@ -260,7 +260,7 @@ ${candidateName}`;
             <button
               type="button"
               onClick={handleCopy}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 transition-colors flex items-center cursor-pointer"
+              className="px-3.5 py-2 min-h-[38px] rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 transition-colors flex items-center cursor-pointer active:scale-95"
             >
               {copied ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
               <span>{copied ? 'Copied!' : 'Copy Text'}</span>
@@ -270,7 +270,7 @@ ${candidateName}`;
               type="button"
               onClick={handleDownloadWord}
               disabled={isGeneratingWord}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white shadow-xs transition-colors flex items-center cursor-pointer"
+              className="px-3.5 py-2 min-h-[38px] rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white shadow-xs transition-colors flex items-center cursor-pointer active:scale-95"
               title="Download as Microsoft Word (.docx)"
             >
               {isGeneratingWord ? (
@@ -285,7 +285,7 @@ ${candidateName}`;
               type="button"
               onClick={handleDownloadPdf}
               disabled={isGeneratingPdf}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white shadow-xs transition-colors flex items-center cursor-pointer"
+              className="px-3.5 py-2 min-h-[38px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white shadow-xs transition-colors flex items-center cursor-pointer active:scale-95"
               title="Download as PDF (.pdf)"
             >
               {isGeneratingPdf ? (

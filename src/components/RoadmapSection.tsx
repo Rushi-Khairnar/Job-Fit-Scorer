@@ -165,9 +165,27 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
         </div>
       </div>
 
+      {/* Mobile Quick Role Selector for Android & Narrow Viewports */}
+      <div className="lg:hidden bg-white dark:bg-neutral-800 rounded-2xl p-4 border border-neutral-200 dark:border-neutral-700 shadow-xs space-y-2">
+        <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider block">
+          Select Role Roadmap ({filteredRoles.length} Paths):
+        </label>
+        <select
+          value={currentRole.title}
+          onChange={(e) => setSelectedRoleTitle(e.target.value)}
+          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm font-bold text-neutral-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+        >
+          {filteredRoles.map(role => (
+            <option key={role.title} value={role.title}>
+              {role.title} — {role.salaryIndia.split('-')[0].trim()}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Role Selector Directory */}
-        <div className="lg:col-span-4 bg-white dark:bg-neutral-800 rounded-3xl p-4 border border-neutral-200 dark:border-neutral-700 shadow-sm max-h-[700px] overflow-y-auto space-y-2">
+        {/* Left Column: Role Selector Directory (Desktop & Tablet) */}
+        <div className="hidden lg:block lg:col-span-4 bg-white dark:bg-neutral-800 rounded-3xl p-4 border border-neutral-200 dark:border-neutral-700 shadow-sm max-h-[700px] overflow-y-auto space-y-2">
           <div className="px-3 py-2 text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
             Available Career Paths ({filteredRoles.length})
           </div>
@@ -177,7 +195,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = ({
               <button
                 key={role.title}
                 onClick={() => setSelectedRoleTitle(role.title)}
-                className={`w-full text-left p-3.5 rounded-2xl transition-all border ${
+                className={`w-full text-left p-3.5 rounded-2xl transition-all border cursor-pointer ${
                   isSelected 
                     ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100 shadow-xs' 
                     : 'border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'

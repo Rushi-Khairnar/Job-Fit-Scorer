@@ -51,62 +51,62 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
     <div className="border border-neutral-200 dark:border-neutral-700/80 rounded-2xl bg-white dark:bg-neutral-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
       {/* Header Summary Row */}
       <div 
-        className="p-6 cursor-pointer select-none hover:bg-neutral-50/70 dark:hover:bg-neutral-700/30 transition-colors"
+        className="p-4 sm:p-6 cursor-pointer select-none hover:bg-neutral-50/70 dark:hover:bg-neutral-700/30 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5">
           {/* Role & Match Status */}
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5">
-              <Target className="w-6 h-6" />
+          <div className="flex items-start space-x-3 sm:space-x-4 min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">
+              <Target className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <div className="flex items-center space-x-3 flex-wrap">
-                <h4 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">{job.role}</h4>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1">
+                <h4 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white tracking-tight truncate">{job.role}</h4>
                 {isPerfectMatch ? (
-                  <span className="inline-flex items-center text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Perfect Match
+                  <span className="inline-flex items-center text-[11px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" /> Perfect Match
                   </span>
                 ) : (
-                  <span className="inline-flex items-center text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">
-                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> {job.missingSkills.length} Skills to Learn
+                  <span className="inline-flex items-center text-[11px] sm:text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/40 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-amber-200 dark:border-amber-800">
+                    <AlertCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" /> {job.missingSkills.length} to Learn
                   </span>
                 )}
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-1">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2 sm:line-clamp-1 leading-relaxed">
                 {job.description}
               </p>
             </div>
           </div>
 
           {/* Unified Model Comparison Metric Cluster */}
-          <div className="flex items-center space-x-3 sm:space-x-5 flex-wrap">
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 flex-wrap">
             {/* Direct Keywords Baseline */}
-            <div className="bg-neutral-100/80 dark:bg-neutral-900/60 px-3.5 py-2 rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 text-center min-w-[90px]">
-              <span className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Exact Match [TF-IDF]</span>
-              <span className="text-base font-bold text-neutral-800 dark:text-neutral-200">{job.tfidfScore}%</span>
+            <div className="bg-neutral-100/80 dark:bg-neutral-900/60 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 text-center flex-1 sm:flex-initial min-w-[76px] sm:min-w-[90px]">
+              <span className="block text-[10px] sm:text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Exact</span>
+              <span className="text-sm sm:text-base font-bold text-neutral-800 dark:text-neutral-200">{job.tfidfScore}%</span>
             </div>
 
             {/* Semantic Model Score */}
-            <div className="bg-blue-50/90 dark:bg-blue-950/40 px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800/70 text-center min-w-[105px]">
-              <span className="block text-[11px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center justify-center">
-                <Sparkles className="w-3 h-3 mr-1" /> Smart Fit [Meaning]
+            <div className="bg-blue-50/90 dark:bg-blue-950/40 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-blue-200 dark:border-blue-800/70 text-center flex-1 sm:flex-initial min-w-[85px] sm:min-w-[105px]">
+              <span className="block text-[10px] sm:text-[11px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center justify-center">
+                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" /> Smart
               </span>
-              <span className="text-base font-extrabold text-blue-700 dark:text-blue-300">{job.semanticScore}%</span>
+              <span className="text-sm sm:text-base font-extrabold text-blue-700 dark:text-blue-300">{job.semanticScore}%</span>
             </div>
 
             {/* Semantic Uplift */}
-            <div className="hidden sm:flex flex-col items-center justify-center min-w-[75px]">
-              <span className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 uppercase">Bonus Fit</span>
-              <span className={`text-sm font-semibold flex items-center ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-500'}`}>
-                <TrendingUp className="w-3.5 h-3.5 mr-1" />
+            <div className="hidden xs:flex flex-col items-center justify-center min-w-[65px] px-1">
+              <span className="text-[10px] sm:text-[11px] font-medium text-neutral-400 dark:text-neutral-500 uppercase">Uplift</span>
+              <span className={`text-xs sm:text-sm font-semibold flex items-center ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-500'}`}>
+                <TrendingUp className="w-3 h-3 mr-0.5" />
                 {isPositive ? `+${uplift}%` : `${uplift}%`}
               </span>
             </div>
 
             {/* Toggle Arrow */}
-            <div className={`p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ml-2 ${expanded ? 'bg-neutral-100 dark:bg-neutral-700 text-blue-600' : 'text-neutral-400'}`}>
-              {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            <div className={`p-2 rounded-xl transition-colors ml-auto sm:ml-1 min-h-[40px] min-w-[40px] flex items-center justify-center ${expanded ? 'bg-neutral-100 dark:bg-neutral-700 text-blue-600' : 'text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}>
+              {expanded ? <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />}
             </div>
           </div>
         </div>
@@ -243,45 +243,49 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
               </div>
 
               {/* Action Toolbar for the Role */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                 <div className="text-xs text-neutral-500 dark:text-neutral-400">
                   Ready to learn these skills or prepare for this role?
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-2 w-full sm:w-auto">
                   {onOpenLiveIntel && (
                     <button
+                      type="button"
                       onClick={() => onOpenLiveIntel(job.role)}
-                      className="px-3.5 py-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors flex items-center border border-indigo-200 dark:border-indigo-800 cursor-pointer"
+                      className="px-3.5 py-2.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors flex items-center justify-center border border-indigo-200 dark:border-indigo-800 cursor-pointer min-h-[42px] active:scale-98"
                     >
-                      <Globe className="w-3.5 h-3.5 mr-1.5" />
-                      Live Market Intel
+                      <Globe className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Live Market Intel</span>
                     </button>
                   )}
                   {onSelectRoadmap && (
                     <button
+                      type="button"
                       onClick={() => onSelectRoadmap(job.role)}
-                      className="px-3.5 py-2 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors flex items-center border border-blue-200 dark:border-blue-800"
+                      className="px-3.5 py-2.5 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors flex items-center justify-center border border-blue-200 dark:border-blue-800 cursor-pointer min-h-[42px] active:scale-98"
                     >
-                      <BookOpen className="w-3.5 h-3.5 mr-1.5" />
-                      View Learning Roadmap
+                      <BookOpen className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Learning Roadmap</span>
                     </button>
                   )}
                   {onSelectQuiz && (
                     <button
+                      type="button"
                       onClick={() => onSelectQuiz(job.role)}
-                      className="px-3.5 py-2 bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-semibold rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors flex items-center border border-purple-200 dark:border-purple-800"
+                      className="px-3.5 py-2.5 bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-semibold rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors flex items-center justify-center border border-purple-200 dark:border-purple-800 cursor-pointer min-h-[42px] active:scale-98"
                     >
-                      <HelpCircle className="w-3.5 h-3.5 mr-1.5" />
-                      Practice Skill Quiz
+                      <HelpCircle className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Practice Quiz</span>
                     </button>
                   )}
                   {onBuildCV && (
                     <button
+                      type="button"
                       onClick={() => onBuildCV(job.role, job.matchingSkills)}
-                      className="px-3.5 py-2 bg-emerald-600 dark:bg-emerald-500 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors flex items-center shadow-sm"
+                      className="px-3.5 py-2.5 bg-emerald-600 dark:bg-emerald-500 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors flex items-center justify-center shadow-xs cursor-pointer min-h-[42px] active:scale-98"
                     >
-                      <FileText className="w-3.5 h-3.5 mr-1.5" />
-                      Build Resume for this Role
+                      <FileText className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Build Resume</span>
                     </button>
                   )}
                 </div>
