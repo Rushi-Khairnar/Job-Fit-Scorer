@@ -25,8 +25,17 @@ import {
   FileCheck2,
   RefreshCw,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  Upload,
+  Edit3,
+  Save,
+  FileUp,
+  X,
+  RotateCcw
 } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+import mammoth from 'mammoth';
 import {
   runAtsParseSimulator,
   runSkillSegmentation,
@@ -146,6 +155,78 @@ B.S. in Computer Science | State University (Graduated 2019)`;
 
   // Impact Score Filter State
   const [impactFilter, setImpactFilter] = useState<'all' | 'passive' | 'high'>('all');
+
+  // Direct File Ingestion & Live Editor State
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+  const [editText, setEditText] = useState<string>('');
+  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [activeFileName, setActiveFileName] = useState<string | null>(null);
+
+  const handleOpenEditor = () => {
+    setEditText(effectiveResumeText);
+    setIsEditorOpen(true);
+  };
+
+  const handleSaveEditedText = () => {
+    if (!editText.trim()) return;
+    onUpdateResumeText(editText.trim());
+    setIsEditorOpen(false);
+  };
+
+  const handleDirectFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('File size exceeds 10MB limit. Please upload a smaller file.');
+      return;
+    }
+
+    setIsUploadingFile(true);
+    setUploadError(null);
+
+    try {
+      let extractedText = '';
+      const lowerName = file.name.toLowerCase();
+
+      if (lowerName.endsWith('.pdf')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let pdfText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          pdfText += content.items.map((item: any) => ('str' in item ? item.str : '')).join(' ') + ' ';
+        }
+        extractedText = pdfText.trim();
+      } else if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        extractedText = result.value.trim();
+      } else {
+        extractedText = (await file.text()).trim();
+      }
+
+      if (!extractedText || extractedText.length < 20) {
+        throw new Error('Could not extract readable text from this file. Ensure it is not a scanned image.');
+      }
+
+      setActiveFileName(file.name);
+      onUpdateResumeText(extractedText);
+      setEditText(extractedText);
+      setUploadError(null);
+    } catch (err: any) {
+      console.error('Direct file upload error:', err);
+      setUploadError(err?.message || 'Failed to parse file. Please upload a valid .pdf, .docx, or .txt file.');
+    } finally {
+      setIsUploadingFile(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   // 1-Click Tailor State
   const [tailorJobDescription, setTailorJobDescription] = useState<string>(
@@ -442,51 +523,124 @@ B.S. in Computer Science & Engineering`;
         </div>
       </div>
 
-      {/* Academic Black Book Project Report Banner */}
-      <div className="bg-gradient-to-r from-blue-900/10 via-indigo-900/10 to-blue-900/10 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-blue-950/40 border border-blue-200/80 dark:border-blue-800/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white uppercase tracking-wider">
-              B.Sc. (I.T) Black Book Report
-            </span>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-              B. K. Birla College, Kalyan (2024–2025)
-            </span>
+      {/* Hidden Native File Input for Direct Upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.docx,.doc,.txt"
+        className="hidden"
+        onChange={handleDirectFileUpload}
+      />
+
+      {/* Active Resume & Quick Ingestion Toolbar */}
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-2 flex-wrap">
+                <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                  {activeFileName || 'Active Candidate Resume'}
+                </span>
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                  {atsResult.wordCount} words · {atsResult.lineCount} lines
+                </span>
+                {resumeText && resumeText.trim().length > 30 ? (
+                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    Active Profile
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                    Sample Baseline
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                All 10 diagnostic scanners and simulators below are reacting to this active text in real-time.
+              </p>
+            </div>
           </div>
-          <h2 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white">
-            ResumeATS AI Project Documentation & Black Book
-          </h2>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400">
-            Candidate: <b>Mr. Rushikesh Anil Khairnar</b> (Seat No. 5144985) &nbsp;|&nbsp; Guide: <b>Ms. Kajal Jaisinghani</b> (Head, Dept of I.T)
-          </p>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingFile}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 active:scale-95 transition-all shadow-xs cursor-pointer"
+            >
+              {isUploadingFile ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+              <span>{isUploadingFile ? 'Extracting...' : 'Upload Resume (.pdf / .docx)'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isEditorOpen) {
+                  setIsEditorOpen(false);
+                } else {
+                  handleOpenEditor();
+                }
+              }}
+              className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 transition-all cursor-pointer active:scale-95"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{isEditorOpen ? 'Close Editor' : 'Edit / Paste Text'}</span>
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <a
-            href="/BLACK_BOOK_PROJECT_REPORT.pdf"
-            download="ResumeATS_AI_BlackBook_Rushikesh_Khairnar.pdf"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-xs cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download PDF</span>
-          </a>
-          <a
-            href="/BLACK_BOOK_PROJECT_REPORT.docx"
-            download="ResumeATS_AI_BlackBook_Rushikesh_Khairnar.docx"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/60 dark:hover:bg-blue-900 active:scale-95 transition-all border border-blue-300 dark:border-blue-700 cursor-pointer"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Download Word (.docx)</span>
-          </a>
-          <a
-            href="/BLACK_BOOK_PROJECT_REPORT.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-300 dark:border-neutral-700 transition-all cursor-pointer"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>View Markdown</span>
-          </a>
-        </div>
+
+        {uploadError && (
+          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+              <span>{uploadError}</span>
+            </div>
+            <button type="button" onClick={() => setUploadError(null)} className="text-rose-500 hover:text-rose-700">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Live Resume Textarea Editor Drawer */}
+        {isEditorOpen && (
+          <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 space-y-3 pt-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+                <Edit3 className="w-3.5 h-3.5 text-blue-600" />
+                <span>Live Resume Text Editor & Input</span>
+              </span>
+              <span className="text-[11px] text-neutral-500 font-mono">
+                {editText.split(/\s+/).filter(Boolean).length} words
+              </span>
+            </div>
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              rows={8}
+              className="w-full p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs font-mono text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 leading-relaxed resize-y"
+              placeholder="Paste or edit your complete resume text here..."
+            />
+            <div className="flex items-center justify-end space-x-2">
+              <button
+                type="button"
+                onClick={() => setIsEditorOpen(false)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEditedText}
+                className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-2xs transition-all cursor-pointer"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save & Re-Scan All ATS Tools</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3-Stage Workflow Navigation */}
@@ -624,6 +778,60 @@ B.S. in Computer Science & Engineering`;
             </div>
           </div>
 
+          {/* Detailed Parser Findings & Health Checklist */}
+          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-blue-600" />
+                <span>ATS Parser Diagnostic Findings & Warnings</span>
+              </span>
+              <span className="text-xs font-mono text-neutral-400">
+                {atsResult.findings.length} findings evaluated
+              </span>
+            </h3>
+
+            <div className="space-y-2.5 pt-1">
+              {atsResult.findings.map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`p-3.5 rounded-xl border flex items-start space-x-3 text-xs leading-relaxed ${
+                    item.type === 'success'
+                      ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200'
+                      : item.type === 'warning'
+                      ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200/80 dark:border-amber-900/40 text-amber-900 dark:text-amber-200'
+                      : 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-200/80 dark:border-rose-900/40 text-rose-900 dark:text-rose-200'
+                  }`}
+                >
+                  {item.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : item.type === 'warning' ? (
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  )}
+                  <div className="space-y-0.5">
+                    <span className="font-bold block">{item.title}</span>
+                    <p className="opacity-90">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+
+              {atsResult.contact.warnings.length > 0 && (
+                <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-amber-600" />
+                    <span>Contact Parsing Cautions:</span>
+                  </span>
+                  <ul className="list-disc list-inside space-y-0.5 pl-2 opacity-90">
+                    {atsResult.contact.warnings.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Raw Plaintext Simulation (How the robot sees it) */}
           <div className="p-5 rounded-2xl bg-neutral-900 text-neutral-200 border border-neutral-800 space-y-3">
             <div className="flex items-center justify-between">
@@ -633,9 +841,19 @@ B.S. in Computer Science & Engineering`;
                   Raw ATS OCR / Text Stream Simulation
                 </span>
               </div>
-              <span className="text-[11px] font-mono text-neutral-400">
-                {atsResult.wordCount} words · {atsResult.lineCount} lines
-              </span>
+              <div className="flex items-center space-x-3">
+                <span className="text-[11px] font-mono text-neutral-400">
+                  {atsResult.wordCount} words · {atsResult.lineCount} lines
+                </span>
+                <button
+                  type="button"
+                  onClick={handleOpenEditor}
+                  className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-blue-400 text-xs font-semibold flex items-center space-x-1 border border-neutral-700 cursor-pointer"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>Edit Text</span>
+                </button>
+              </div>
             </div>
             <pre className="p-4 rounded-xl bg-black/60 font-mono text-xs text-neutral-300 leading-relaxed overflow-x-auto max-h-72 scrollbar-thin">
               {effectiveResumeText}

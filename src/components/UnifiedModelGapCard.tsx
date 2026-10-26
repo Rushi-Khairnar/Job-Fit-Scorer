@@ -25,7 +25,7 @@ interface UnifiedModelGapCardProps {
     semanticScore: number;
     matchingSkills: string[];
     missingSkills: string[];
-    radarData: Array<{ subject: string; student: number; ideal: number }>;
+    radarData?: Array<{ subject: string; student?: number; candidate?: number; ideal?: number; benchmark?: number }>;
   };
   isDarkMode: boolean;
   onSelectRoadmap?: (role: string) => void;
@@ -46,6 +46,21 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
   const uplift = (job.semanticScore - job.tfidfScore).toFixed(1);
   const isPositive = Number(uplift) > 0;
   const isPerfectMatch = job.missingSkills.length === 0;
+
+  // Normalize radar data to safely handle both student/candidate and ideal/benchmark formats
+  const safeRadarData = (job.radarData && job.radarData.length > 0)
+    ? job.radarData.map(item => ({
+        subject: item.subject,
+        student: Number(item.student ?? item.candidate ?? 0),
+        ideal: Number(item.ideal ?? item.benchmark ?? 75),
+      }))
+    : [
+        { subject: 'Languages', student: 40, ideal: 80 },
+        { subject: 'Frameworks', student: 30, ideal: 75 },
+        { subject: 'Databases', student: 30, ideal: 70 },
+        { subject: 'DevOps & Cloud', student: 40, ideal: 85 },
+        { subject: 'Architecture', student: 75, ideal: 80 },
+      ];
 
   return (
     <div className="border border-neutral-200 dark:border-neutral-700/80 rounded-2xl bg-white dark:bg-neutral-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
@@ -220,23 +235,50 @@ export const UnifiedModelGapCard: React.FC<UnifiedModelGapCardProps> = ({
                   <Sparkles className="w-4 h-4 text-blue-500 mr-2" />
                   Your Skills vs What Employers Look For
                 </h5>
-                <div className="h-64 w-full">
+                <div className="h-72 w-full min-h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="75%" data={job.radarData}>
-                      <PolarGrid stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
-                      <PolarAngleAxis dataKey="subject" tick={{ fill: isDarkMode ? '#9ca3af' : '#4b5563', fontSize: 12 }} />
-                      <PolarRadiusAxis angle={30} domain={[0, 100]} stroke={isDarkMode ? "#4b5563" : "#d1d5db"} />
-                      <Radar name="Your Skills" dataKey="student" stroke="#2563eb" fill="#3b82f6" fillOpacity={0.4} />
-                      <Radar name="Employer Benchmark" dataKey="ideal" stroke="#10b981" fill="#10b981" fillOpacity={0.15} />
+                    <RadarChart cx="50%" cy="50%" outerRadius="68%" data={safeRadarData}>
+                      <PolarGrid stroke={isDarkMode ? "#4b5563" : "#cbd5e1"} strokeOpacity={0.8} />
+                      <PolarAngleAxis 
+                        dataKey="subject" 
+                        tick={{ fill: isDarkMode ? '#e2e8f0' : '#334155', fontSize: 12, fontWeight: 600 }} 
+                      />
+                      <PolarRadiusAxis 
+                        angle={30} 
+                        domain={[0, 100]} 
+                        stroke={isDarkMode ? "#64748b" : "#94a3b8"} 
+                        tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10 }}
+                      />
+                      <Radar 
+                        name="Your Skills" 
+                        dataKey="student" 
+                        stroke="#3b82f6" 
+                        strokeWidth={2.5} 
+                        fill="#3b82f6" 
+                        fillOpacity={0.45} 
+                        dot={{ r: 4, fill: '#3b82f6', stroke: isDarkMode ? '#1e293b' : '#ffffff', strokeWidth: 1.5 }}
+                      />
+                      <Radar 
+                        name="Employer Benchmark" 
+                        dataKey="ideal" 
+                        stroke="#10b981" 
+                        strokeWidth={2} 
+                        fill="#10b981" 
+                        fillOpacity={0.2} 
+                        dot={{ r: 3.5, fill: '#10b981', stroke: isDarkMode ? '#1e293b' : '#ffffff', strokeWidth: 1.5 }}
+                      />
                       <Tooltip 
                         contentStyle={{ 
-                          backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', 
-                          borderColor: isDarkMode ? '#374151' : '#e5e7eb',
-                          color: isDarkMode ? '#ffffff' : '#000000',
-                          borderRadius: '8px'
+                          backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                          borderColor: isDarkMode ? '#475569' : '#cbd5e1',
+                          color: isDarkMode ? '#f8fafc' : '#0f172a',
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)'
                         }} 
                       />
-                      <Legend />
+                      <Legend 
+                        wrapperStyle={{ paddingTop: '8px' }}
+                      />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>

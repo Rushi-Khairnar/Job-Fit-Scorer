@@ -572,11 +572,11 @@ export default function App() {
         baseMatch: baseScore,
         semanticMatch: semanticScore,
         radarData: [
-          { subject: 'Languages', candidate: match.length * 20, benchmark: 80 },
-          { subject: 'Frameworks', candidate: match.length * 15, benchmark: 75 },
-          { subject: 'Databases', candidate: match.includes('SQL') || match.includes('PostgreSQL') ? 90 : 30, benchmark: 70 },
-          { subject: 'DevOps & Cloud', candidate: match.includes('AWS') || match.includes('Docker') ? 85 : 40, benchmark: 85 },
-          { subject: 'Architecture', candidate: Math.min(100, semanticScore + 10), benchmark: 80 },
+          { subject: 'Languages', candidate: Math.min(100, Math.max(30, match.length * 20)), student: Math.min(100, Math.max(30, match.length * 20)), benchmark: 80, ideal: 80 },
+          { subject: 'Frameworks', candidate: Math.min(100, Math.max(25, match.length * 15)), student: Math.min(100, Math.max(25, match.length * 15)), benchmark: 75, ideal: 75 },
+          { subject: 'Databases', candidate: match.includes('SQL') || match.includes('PostgreSQL') ? 90 : 35, student: match.includes('SQL') || match.includes('PostgreSQL') ? 90 : 35, benchmark: 70, ideal: 70 },
+          { subject: 'DevOps & Cloud', candidate: match.includes('AWS') || match.includes('Docker') ? 85 : 40, student: match.includes('AWS') || match.includes('Docker') ? 85 : 40, benchmark: 85, ideal: 85 },
+          { subject: 'Architecture', candidate: Math.min(100, semanticScore + 10), student: Math.min(100, semanticScore + 10), benchmark: 80, ideal: 80 },
         ]
       };
     });
@@ -2236,8 +2236,10 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
             >
               <AtsDiagnosticsSuite
-                resumeText={currentProfile.resumeText || ''}
+                resumeText={uploadedFileText || textInput || currentProfile.resumeText || ''}
                 onUpdateResumeText={(newText) => {
+                  setUploadedFileText(newText);
+                  setTextInput(newText);
                   handleUpdateProfile({ resumeText: newText });
                 }}
                 targetRoleTitle={currentProfile.enrolledRoadmapRole || targetRole || 'Data Scientist'}
