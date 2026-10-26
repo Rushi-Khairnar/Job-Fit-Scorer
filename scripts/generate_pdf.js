@@ -32,7 +32,6 @@ class BlackBookPDFBuilder {
     this.cursorY = MARGIN_TOP;
     this.pageNumber = 1;
     this.isCoverPage = true;
-    this.isCertificatePage = false;
   }
 
   // Check if we need to advance to a new page
@@ -56,7 +55,7 @@ class BlackBookPDFBuilder {
     for (let i = 1; i <= totalPages; i++) {
       this.doc.setPage(i);
 
-      // Skip headers/footers for cover page and formal preliminary certificate
+      // Skip headers/footers for cover page
       if (i === 1) {
         // Draw elegant double border on cover page
         this.doc.setDrawColor(...COLOR_PRIMARY);
@@ -79,7 +78,7 @@ class BlackBookPDFBuilder {
         this.doc.setFont('helvetica', 'normal');
         this.doc.setFontSize(8);
         this.doc.setTextColor(...COLOR_MUTED);
-        this.doc.text('JOBFIT STUDIO : AN INTELLIGENT CAREER COPILOT & ATS PLATFORM', MARGIN_LEFT, 38);
+        this.doc.text('RESUMEATS AI: INTELLIGENT ATS RESUME ANALYZER', MARGIN_LEFT, 38);
         this.doc.text('BLACK BOOK PROJECT REPORT', PAGE_WIDTH - MARGIN_RIGHT, 38, { align: 'right' });
         this.doc.setDrawColor(...COLOR_CODE_BORDER);
         this.doc.setLineWidth(0.75);
@@ -93,11 +92,10 @@ class BlackBookPDFBuilder {
         this.doc.line(MARGIN_LEFT, PAGE_HEIGHT - 40, PAGE_WIDTH - MARGIN_RIGHT, PAGE_HEIGHT - 40);
         
         this.doc.setFont('helvetica', 'normal');
-        this.doc.setFontSize(8.5);
+        this.doc.setFontSize(8);
         this.doc.setTextColor(...COLOR_MUTED);
-        this.doc.text('Department of Computer Science & Engineering', MARGIN_LEFT, PAGE_HEIGHT - 28);
+        this.doc.text('Mr. Rushikesh Anil Khairnar (Seat No. 5144985) | Dept. of Information Technology, B. K. Birla College', MARGIN_LEFT, PAGE_HEIGHT - 28);
         
-        // Preliminary Roman numerals vs standard Arabic numbers
         let pageStr = `Page ${i}`;
         this.doc.text(pageStr, PAGE_WIDTH - MARGIN_RIGHT, PAGE_HEIGHT - 28, { align: 'right' });
       }
@@ -105,7 +103,7 @@ class BlackBookPDFBuilder {
   }
 
   // Render Cover / Title Page
-  renderCoverPage(lines) {
+  renderCoverPage() {
     this.cursorY = 70;
     
     // Top University Super-heading
@@ -117,15 +115,15 @@ class BlackBookPDFBuilder {
 
     // Project Title
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(19);
+    this.doc.setFontSize(20);
     this.doc.setTextColor(...COLOR_PRIMARY);
     const titleLines = this.doc.splitTextToSize(
-      'JOBFIT STUDIO: AN INTELLIGENT AI-POWERED CAREER COPILOT, RESUME PARSER & ATS DIAGNOSTICS PLATFORM',
+      'RESUMEATS AI: AN INTELLIGENT ATS RESUME ANALYZER & CAREER INTELLIGENCE PLATFORM',
       CONTENT_WIDTH - 20
     );
     titleLines.forEach(tl => {
       this.doc.text(tl, PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
-      this.cursorY += 23;
+      this.cursorY += 24;
     });
 
     // Decorative divider line
@@ -133,13 +131,13 @@ class BlackBookPDFBuilder {
     this.doc.setDrawColor(...COLOR_ACCENT);
     this.doc.setLineWidth(2);
     this.doc.line(PAGE_WIDTH / 2 - 90, this.cursorY, PAGE_WIDTH / 2 + 90, this.cursorY);
-    this.cursorY += 25;
+    this.cursorY += 26;
 
     // Subtitle
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(10.5);
     this.doc.setTextColor(...COLOR_TEXT);
-    this.doc.text('A Project Report Submitted in Partial Fulfillment of the Requirements', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('A Project Report Submitted in Partial Fulfilment of the Requirements', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 16;
     this.doc.text('for the Award of the Degree of', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 20;
@@ -148,15 +146,11 @@ class BlackBookPDFBuilder {
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(13);
     this.doc.setTextColor(...COLOR_PRIMARY);
-    this.doc.text('BACHELOR OF TECHNOLOGY / SCIENCE', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
-    this.cursorY += 17;
+    this.doc.text('BACHELOR OF SCIENCE', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.cursorY += 16;
     this.doc.setFontSize(11.5);
-    this.doc.text('IN COMPUTER SCIENCE & ENGINEERING', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('(INFORMATION TECHNOLOGY)', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 45;
-
-    // Submitted By & Under Guidance Boxes (side-by-side or stacked cleanly)
-    const boxWidth = CONTENT_WIDTH;
-    const startX = MARGIN_LEFT;
 
     // Submitted by section
     this.doc.setFont('helvetica', 'normal');
@@ -166,15 +160,15 @@ class BlackBookPDFBuilder {
     this.cursorY += 16;
 
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(13);
+    this.doc.setFontSize(13.5);
     this.doc.setTextColor(...COLOR_PRIMARY);
-    this.doc.text('[Student Candidate Name]', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('Mr. Rushikesh Anil Khairnar', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 15;
 
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(10);
     this.doc.setTextColor(...COLOR_TEXT);
-    this.doc.text('Roll Number / PRN: [Roll Number / PRN]', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('Seat No.: 5144985  |  PRN: 2022016401830893', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 35;
 
     // Guidance section
@@ -185,38 +179,40 @@ class BlackBookPDFBuilder {
     this.cursorY += 16;
 
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(12);
+    this.doc.setFontSize(12.5);
     this.doc.setTextColor(...COLOR_PRIMARY);
-    this.doc.text('[Project Guide Name]', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('Ms. Kajal Jaisinghani', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 14;
 
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(9.5);
     this.doc.setTextColor(...COLOR_TEXT);
-    this.doc.text('Project Supervisor & Assistant Professor', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('(Head, Dept of I.T / Assistant Professor)', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 13;
-    this.doc.text('Department of Computer Science & Engineering', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('Department of Information Technology', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 50;
 
     // Institution & Year
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(12);
+    this.doc.setFontSize(12.5);
     this.doc.setTextColor(...COLOR_PRIMARY);
-    this.doc.text('[College / Institution Name]', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('B. K. BIRLA COLLEGE, KALYAN', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 16;
 
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(10);
     this.doc.setTextColor(...COLOR_TEXT);
-    this.doc.text('Affiliated to [University Name] | Approved by AICTE / UGC', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('(EMPOWERED AUTONOMOUS STATUS)', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
     this.cursorY += 15;
-    this.doc.text('[City, State, PIN Code]', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
-    this.cursorY += 20;
+    this.doc.text('(Affiliated to University of Mumbai)', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.cursorY += 15;
+    this.doc.text('KALYAN, 421304 MAHARASHTRA', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.cursorY += 22;
 
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(11);
     this.doc.setTextColor(...COLOR_ACCENT);
-    this.doc.text('ACADEMIC YEAR: 2025 – 2026', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
+    this.doc.text('ACADEMIC YEAR: 2024 – 2025', PAGE_WIDTH / 2, this.cursorY, { align: 'center' });
   }
 
   // Draw a markdown table with styled headers, alternating row striping, borders, and wrapped text
@@ -248,9 +244,11 @@ class BlackBookPDFBuilder {
     if (numCols === 2) {
       colWidths = [140, CONTENT_WIDTH - 140];
     } else if (numCols === 3) {
-      colWidths = [120, 160, CONTENT_WIDTH - 280];
+      colWidths = [120, 260, CONTENT_WIDTH - 380];
     } else if (numCols === 4) {
-      colWidths = [100, 110, 190, 87];
+      colWidths = [80, 160, 160, 87];
+    } else if (numCols === 5) {
+      colWidths = [60, 140, 140, 95, 52];
     } else {
       const avg = CONTENT_WIDTH / numCols;
       colWidths = Array(numCols).fill(avg);
@@ -267,8 +265,8 @@ class BlackBookPDFBuilder {
       let maxLines = 1;
       cells.forEach((cell, idx) => {
         const textWithoutMarkdown = cell.replace(/\*\*/g, '').replace(/###/g, '');
-        const w = colWidths[idx] - 12;
-        const lines = this.doc.splitTextToSize(textWithoutMarkdown, w);
+        const w = (colWidths[idx] || 80) - 12;
+        const lines = this.doc.splitTextToSize(textWithoutMarkdown, Math.max(w, 20));
         if (lines.length > maxLines) maxLines = lines.length;
       });
       return Math.max(20, maxLines * lineHeight + rowPadding * 2);
@@ -288,7 +286,7 @@ class BlackBookPDFBuilder {
 
     headerRow.forEach((hText, idx) => {
       const cleanH = hText.replace(/\*\*/g, '');
-      const cellW = colWidths[idx];
+      const cellW = colWidths[idx] || 80;
       this.doc.text(cleanH, curX + 6, this.cursorY + 14);
       curX += cellW;
     });
@@ -319,7 +317,7 @@ class BlackBookPDFBuilder {
         this.doc.setFontSize(fontSize);
         this.doc.setTextColor(...(isBold ? COLOR_PRIMARY : COLOR_TEXT));
 
-        const wrapped = this.doc.splitTextToSize(cleanCell, cellW - 12);
+        const wrapped = this.doc.splitTextToSize(cleanCell, Math.max(cellW - 12, 20));
         let textY = this.cursorY + rowPadding + 8;
         wrapped.forEach(wLine => {
           this.doc.text(wLine, cellX + 6, textY);
@@ -342,10 +340,6 @@ class BlackBookPDFBuilder {
       this.cursorY += rHeight;
     });
 
-    // Outer table border
-    this.doc.setDrawColor(...COLOR_PRIMARY);
-    this.doc.setLineWidth(0.75);
-    this.doc.rect(MARGIN_LEFT, this.cursorY - headerHeight - dataRows.reduce((a,b)=>a+getRowHeight(b), 0), CONTENT_WIDTH, headerHeight + dataRows.reduce((a,b)=>a+getRowHeight(b), 0), 'S');
     this.cursorY += 15;
   }
 
@@ -390,6 +384,33 @@ class BlackBookPDFBuilder {
     this.cursorY += boxHeight + 14;
   }
 
+  // Render Figure Placeholder Box
+  renderFigureBox(figLines) {
+    this.ensureSpace(75);
+    const boxH = 65;
+
+    this.doc.setFillColor(241, 245, 249); // slate-100
+    this.doc.setDrawColor(148, 163, 184); // slate-400
+    this.doc.setLineWidth(1);
+    this.doc.roundedRect(MARGIN_LEFT, this.cursorY, CONTENT_WIDTH, boxH, 4, 4, 'FD');
+
+    // Inner text
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFontSize(9.5);
+    this.doc.setTextColor(...COLOR_PRIMARY);
+
+    const firstLine = figLines[0] || '[SCREENSHOT PLACEHOLDER]';
+    this.doc.text(firstLine, PAGE_WIDTH / 2, this.cursorY + 22, { align: 'center' });
+
+    this.doc.setFont('helvetica', 'italic');
+    this.doc.setFontSize(8);
+    this.doc.setTextColor(...COLOR_MUTED);
+    const subText = figLines[1] || 'Insert your application screenshot here';
+    this.doc.text(subText, PAGE_WIDTH / 2, this.cursorY + 42, { align: 'center' });
+
+    this.cursorY += boxH + 12;
+  }
+
   // Build the complete document
   generate() {
     const rawLines = this.rawText.split('\n');
@@ -405,6 +426,8 @@ class BlackBookPDFBuilder {
     let inCode = false;
     let codeBuffer = [];
     let codeLang = '';
+    let inFigBox = false;
+    let figBuffer = [];
 
     while (idx < rawLines.length) {
       const line = rawLines[idx];
@@ -444,6 +467,24 @@ class BlackBookPDFBuilder {
       }
 
       if (inCode) {
+        // If it's a figure placeholder box inside code fences
+        if (trimmed.startsWith('+--') || trimmed.startsWith('|')) {
+          if (trimmed.includes('[FIG')) {
+            figBuffer.push(trimmed.replace(/[+|]/g, '').trim());
+          } else if (trimmed.includes('Insert')) {
+            figBuffer.push(trimmed.replace(/[+|]/g, '').trim());
+          }
+          if (trimmed.startsWith('+--') && figBuffer.length > 0) {
+            this.renderFigureBox(figBuffer);
+            figBuffer = [];
+            inCode = false;
+            codeBuffer = [];
+            idx++;
+            continue;
+          }
+          idx++;
+          continue;
+        }
         codeBuffer.push(line);
         idx++;
         continue;
@@ -462,14 +503,14 @@ class BlackBookPDFBuilder {
         tableBuffer = [];
       }
 
-      // Skip HTML div tags
-      if (trimmed.startsWith('<div') || trimmed.startsWith('</div') || trimmed === '<br/>' || trimmed === '<br>') {
+      // Skip HTML tags
+      if (trimmed.startsWith('<div') || trimmed.startsWith('</div') || trimmed.startsWith('<table') || trimmed.startsWith('</table') || trimmed.startsWith('<tr') || trimmed.startsWith('</tr') || trimmed.startsWith('<td') || trimmed.startsWith('</td') || trimmed === '<br/>' || trimmed === '<br>') {
         idx++;
         continue;
       }
 
       // Skip Cover page markdown lines that were already custom rendered
-      if (idx < 40 && (trimmed.startsWith('# BLACK BOOK') || trimmed.startsWith('## TITLE PAGE') || trimmed.includes('[Student Name]'))) {
+      if (idx < 50 && (trimmed.startsWith('# BLACK BOOK') || trimmed.startsWith('## TITLE PAGE') || trimmed.includes('Mr. Rushikesh Anil Khairnar'))) {
         idx++;
         continue;
       }
@@ -656,9 +697,6 @@ class BlackBookPDFBuilder {
   }
 
   renderParagraph(text) {
-    // Check if line contains bold lead-in like: "**Background:** The recruitment landscape..."
-    const boldLeadMatch = text.match(/^\*\*([^*]+)\*\*(.*)/);
-    
     this.ensureSpace(16);
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(9.5);

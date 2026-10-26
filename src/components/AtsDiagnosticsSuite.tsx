@@ -442,6 +442,53 @@ B.S. in Computer Science & Engineering`;
         </div>
       </div>
 
+      {/* Academic Black Book Project Report Banner */}
+      <div className="bg-gradient-to-r from-blue-900/10 via-indigo-900/10 to-blue-900/10 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-blue-950/40 border border-blue-200/80 dark:border-blue-800/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white uppercase tracking-wider">
+              B.Sc. (I.T) Black Book Report
+            </span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+              B. K. Birla College, Kalyan (2024–2025)
+            </span>
+          </div>
+          <h2 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white">
+            ResumeATS AI Project Documentation & Black Book
+          </h2>
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">
+            Candidate: <b>Mr. Rushikesh Anil Khairnar</b> (Seat No. 5144985) &nbsp;|&nbsp; Guide: <b>Ms. Kajal Jaisinghani</b> (Head, Dept of I.T)
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <a
+            href="/BLACK_BOOK_PROJECT_REPORT.pdf"
+            download="ResumeATS_AI_BlackBook_Rushikesh_Khairnar.pdf"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
+          </a>
+          <a
+            href="/BLACK_BOOK_PROJECT_REPORT.docx"
+            download="ResumeATS_AI_BlackBook_Rushikesh_Khairnar.docx"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/60 dark:hover:bg-blue-900 active:scale-95 transition-all border border-blue-300 dark:border-blue-700 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Download Word (.docx)</span>
+          </a>
+          <a
+            href="/BLACK_BOOK_PROJECT_REPORT.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-300 dark:border-neutral-700 transition-all cursor-pointer"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>View Markdown</span>
+          </a>
+        </div>
+      </div>
+
       {/* 3-Stage Workflow Navigation */}
       <div className="space-y-3">
         {/* Stage Selector Tabs */}
